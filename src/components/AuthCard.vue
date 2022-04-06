@@ -16,6 +16,10 @@ const props = defineProps<IProps>();
 </template>
 
 <style>
+:root {
+    --padding: 20px;
+    --width: 33%;
+}
 body {
     display: flex;
     height: 100vh;
@@ -28,16 +32,22 @@ body {
     -o-background-size: cover;
     background-size: cover;
     backdrop-filter: blur(3.7px);
+    flex-direction: column;
 }
 article.auth-card {
     display: flex;
     align-items: center;
     flex-direction: column;
-    width: 30%;
+    width: var(--width);
     -webkit-box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
     -moz-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
-    padding: 20px;
+    padding: var(--padding);
     background: #fff;
+}
+.footer {
+    background: #d5d5d5;
+    width: var(--width);
+    padding: var(--padding);
 }
 </style>
