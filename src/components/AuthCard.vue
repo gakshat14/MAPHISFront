@@ -1,16 +1,17 @@
 <script setup lang="ts">
 interface IProps {
     name: 'login' | 'register';
+    heading: string;
 }
 const props = defineProps<IProps>();
 </script>
 
 <template>
-    <article class="auth-card">
-        <slot name="heading"></slot>
-        <slot></slot>
-    </article>
-    <div class="footer">
+    <div class="card-container" :class="props.name === 'login' ? 'login-grad' : 'register-grad'">
+        <article class="auth-card">
+            <h1>{{ props.heading }}</h1>
+            <slot></slot>
+        </article>
         <slot name="footer"></slot>
     </div>
 </template>
@@ -20,20 +21,24 @@ const props = defineProps<IProps>();
     --padding: 20px;
     --width: 33%;
 }
-body {
+div.card-container {
     display: flex;
     height: 100vh;
     width: 100vw;
     justify-content: center;
     align-items: center;
-    background: url(../assets/register.jpg) no-repeat center center fixed;
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    background-size: cover;
-    backdrop-filter: blur(3.7px);
     flex-direction: column;
+    overflow: hidden;
 }
+
+div.card-container.login-grad {
+    background-image: linear-gradient(15deg, #13547a 0%, #80d0c7 100%);
+}
+
+div.card-container.register-grad {
+    background-image: linear-gradient(to top, #09203f 0%, #537895 100%);
+}
+
 article.auth-card {
     display: flex;
     align-items: center;
@@ -44,10 +49,5 @@ article.auth-card {
     box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
     padding: var(--padding);
     background: #fff;
-}
-.footer {
-    background: #d5d5d5;
-    width: var(--width);
-    padding: var(--padding);
 }
 </style>
