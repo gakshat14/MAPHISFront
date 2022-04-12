@@ -33,10 +33,7 @@ function onLoginClicked(e: MouseEvent | Event) {
 </script>
 
 <template>
-    <AuthCard name="login">
-        <template #heading>
-            <h1>Login</h1>
-        </template>
+    <AuthCard name="login" heading="Login">
         <template #default>
             <form @submit.prevent="">
                 <input v-model="state.email" type="email" name="email" id="email" placeholder="Email" />
@@ -46,7 +43,11 @@ function onLoginClicked(e: MouseEvent | Event) {
             </form>
         </template>
         <template #footer>
-            <RouterLink class="pure-button button-secondary create-button" to="/register">Create an account</RouterLink>
+            <footer>
+                <RouterLink class="pure-button button-secondary create-button" to="/register"
+                    >Create an account</RouterLink
+                >
+            </footer>
         </template>
     </AuthCard>
 </template>
@@ -81,5 +82,11 @@ form button {
 
 .error {
     border-color: #e9322d;
+}
+
+footer {
+    background: #d5d5d5;
+    width: var(--width);
+    padding: var(--padding);
 }
 </style>
