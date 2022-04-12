@@ -12,7 +12,7 @@ interface IInputState {
 
 const initialInputState: IInputState = {
     input: '',
-    isValid: false,
+    isValid: true,
 };
 
 interface IState {
@@ -24,6 +24,8 @@ interface IState {
     password: IInputState;
     email: IInputState;
     countryInput: string;
+    showResults: boolean;
+    filteredCountries: string[];
 }
 
 const componentIDs = {
@@ -44,34 +46,27 @@ const initialState: IState = {
     password: { ...initialInputState },
     email: { ...initialInputState },
     countryInput: '',
+    showResults: false,
+    filteredCountries: [],
 };
 
 const state: IState = reactive(initialState);
 
-const searchCountries = computed(() => {
-    if (state.countryInput.length < 4) return [];
-
-    const newCountries = [...state.countryList];
-    return newCountries.filter((country) => country.toLowerCase().includes(state.countryInput));
-});
-
 function onCountryClicked(country: string) {
     state.selectedCountry = country;
     console.log(country);
-}
-
-function showResults(forceHide = false) {
-    if (forceHide) return false;
-
-    if (searchCountries.value.length > 0) return true;
+    state.showResults = false;
+    state.filteredCountries = [];
 }
 
 function getCountryValue() {
-    return state.selectedCountry ?? state.countryInput;
+    if (state.selectedCountry.length < 1) return state.countryInput;
+    return state.selectedCountry;
 }
 
 function onCountryChanged(e: Event) {
     state.countryInput = (e.target as HTMLInputElement).value;
+    displayResults();
 }
 
 function validationService(e: Event) {
@@ -119,6 +114,21 @@ async function makeRegisterCall() {
         console.error(error);
     }
 }
+
+function displayResults() {
+    if (state.countryInput.length < 4) state.filteredCountries = [];
+
+    const newCountries = [...state.countryList];
+    state.filteredCountries = newCountries.filter((country) =>
+        country.toLowerCase().includes(state.countryInput.toLowerCase()),
+    );
+}
+
+function showAndDisplayresults(show = true) {
+    return function (e: FocusEvent) {
+        state.showResults = show;
+    };
+}
 </script>
 
 <template>
@@ -128,26 +138,27 @@ async function makeRegisterCall() {
                 <fieldset>
                     <div class="pure-g">
                         <div class="pure-u-1">
-                            <label :for="componentIDs.firstName">First name*</label>
+                            <label :for="componentIDs.firstName">First name *</label>
                             <input
                                 v-model="state.firstName.input"
                                 class="pure-input-1"
-                                :class="!state.firstName.isValid && 'highlight'"
                                 type="text"
                                 :id="componentIDs.firstName"
                                 :name="componentIDs.firstName"
+                                :class="!state.firstName.isValid && 'invalid'"
                                 @blur="validationService"
                                 required
                             />
                         </div>
                         <div class="pure-u-1">
-                            <label :for="componentIDs.lastName">Last name*</label>
+                            <label :for="componentIDs.lastName">Last name *</label>
                             <input
                                 v-model="state.lastName.input"
                                 class="pure-input-1"
                                 type="text"
                                 :id="componentIDs.lastName"
                                 :name="componentIDs.lastName"
+                                :class="!state.lastName.isValid && 'invalid'"
                                 required
                                 @blur="validationService"
                             />
@@ -161,13 +172,17 @@ async function makeRegisterCall() {
                                 type="text"
                                 :name="componentIDs.country"
                                 :id="componentIDs.country"
-                                @blur="showResults(true)"
+                                @focus="showAndDisplayresults()()"
+                                @blur="showAndDisplayresults(false)()"
                             />
-                            <ul class="countries-container" v-if="showResults()">
+                            <ul
+                                class="countries-container"
+                                v-if="state.showResults && state.filteredCountries.length > 0"
+                            >
                                 <li
                                     @click="onCountryClicked(country)"
                                     class="countries"
-                                    v-for="country in searchCountries"
+                                    v-for="country in state.filteredCountries"
                                     :key="country"
                                     @mousedown.prevent
                                 >
@@ -186,24 +201,26 @@ async function makeRegisterCall() {
                             />
                         </div>
                         <div class="pure-u-1">
-                            <label :for="componentIDs.email">Email*</label>
+                            <label :for="componentIDs.email">Email *</label>
                             <input
                                 v-model="state.email.input"
                                 class="pure-input-1"
                                 type="email"
                                 :id="componentIDs.email"
                                 :name="componentIDs.email"
+                                :class="!state.email.isValid && 'invalid'"
                                 required
                                 @blur="validationService"
                             />
                         </div>
                         <div class="pure-u-1">
-                            <label :for="componentIDs.password">Password*</label>
+                            <label :for="componentIDs.password">Password *</label>
                             <input
                                 v-model="state.password.input"
                                 class="pure-input-1"
                                 type="password"
                                 :id="componentIDs.password"
+                                :class="!state.password.isValid && 'invalid'"
                                 required
                                 @blur="validationService"
                             />
@@ -239,5 +256,9 @@ async function makeRegisterCall() {
 li.countries {
     list-style: none;
     margin-top: 5px;
+}
+.pure-form input.invalid {
+    color: #b94a48;
+    border-color: #e9322d;
 }
 </style>
