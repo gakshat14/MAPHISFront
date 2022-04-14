@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import type { IAuthRequest, IToken } from '@/utils/model';
+import { post } from '@/utils/networkUtils';
+import { decodeJWTToken, storeInSessionStorage } from '@/utils/securityUtils';
 import { validateEmail, validatePassword } from '@/utils/validationUtils';
 import { reactive } from 'vue';
 import { RouterLink } from 'vue-router';
@@ -13,22 +16,32 @@ interface IState {
 
 const state: IState = reactive({ email: '', password: '', isEmailValid: true, isPasswordValid: true });
 
-function onLoginClicked(e: MouseEvent | Event) {
-    // validate email and password
-    const isEmailValid = validateEmail(state.email);
-    const isPasswordValid = validatePassword(state.password);
+async function onLoginClicked(e: MouseEvent | Event) {
+    try {
+        // validate email and password
+        const isEmailValid = validateEmail(state.email);
+        const isPasswordValid = validatePassword(state.password);
 
-    if (!isEmailValid) {
-        state.isEmailValid = false;
-        return;
+        if (!isEmailValid) {
+            state.isEmailValid = false;
+            return;
+        }
+
+        if (!isPasswordValid) {
+            state.isPasswordValid = false;
+            return;
+        }
+
+        const response = await post<IToken, IAuthRequest>('http://localhost:5998/auth', {
+            email: state.email,
+            passwrod: state.password,
+        });
+        const decodedToken = decodeJWTToken(response.access_token);
+        console.log(decodedToken);
+        storeInSessionStorage<IToken>('access_token', response);
+    } catch (error) {
+        console.error(error);
     }
-
-    if (!isPasswordValid) {
-        state.isPasswordValid = false;
-        return;
-    }
-
-    // everything is in order initiate network call
 }
 </script>
 

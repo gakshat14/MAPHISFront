@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import type { IRegister } from '@/utils/model';
+import {
+    type IRegisterRequestBody,
+    createNetworkObject,
+    type INetworkData,
+    type IRegisterResponse,
+    initialRegisterObject,
+} from '@/utils/model';
 import { validateEmail, validatePassword } from '@/utils/validationUtils';
 import { computed, reactive } from 'vue';
 import AuthCard from '../components/AuthCard.vue';
@@ -26,6 +32,7 @@ interface IState {
     countryInput: string;
     showResults: boolean;
     filteredCountries: string[];
+    registrationData: INetworkData<IRegisterResponse>;
 }
 
 const componentIDs = {
@@ -48,6 +55,7 @@ const initialState: IState = {
     countryInput: '',
     showResults: false,
     filteredCountries: [],
+    registrationData: createNetworkObject<IRegisterResponse>(initialRegisterObject),
 };
 
 const state: IState = reactive(initialState);
@@ -94,7 +102,11 @@ const disableRegister = computed(
 
 async function makeRegisterCall() {
     try {
-        const body: IRegister = {
+        const isStateValid =
+            state.firstName.isValid && state.lastName.isValid && state.email.isValid && state.password.isValid;
+        if (!isStateValid) return;
+        state.registrationData = createNetworkObject<IRegisterResponse>(initialRegisterObject, true);
+        const body: IRegisterRequestBody = {
             email: state.email.input,
             password: state.password.input,
             details: {
@@ -104,14 +116,16 @@ async function makeRegisterCall() {
         };
         state.selectedCountry && (body.details.country = state.selectedCountry);
         state.occupation && (body.details.occupation = state.occupation);
-        const response = await fetch('http://3.87.55.122/user/add', {
+        const response = await fetch('http://localhost:5998/user/add', {
             method: 'POST',
             body: JSON.stringify(body),
             headers: { 'Content-Type': 'application/json' },
         });
-        console.log(await response.json());
+        const parsedResponse: IRegisterResponse = await response.json();
+        state.registrationData = createNetworkObject(parsedResponse, false);
     } catch (error) {
         console.error(error);
+        state.registrationData = createNetworkObject(initialRegisterObject, false, true);
     }
 }
 
@@ -129,12 +143,20 @@ function showAndDisplayresults(show = true) {
         state.showResults = show;
     };
 }
+
+function onLoginClicked(e: MouseEvent | Event) {
+    // everything is in order initiate network call
+}
 </script>
 
 <template>
     <AuthCard heading="Register" name="register">
         <template #default>
-            <form class="pure-form pure-form-stacked" @submit.prevent="">
+            <form
+                class="pure-form pure-form-stacked"
+                @submit.prevent=""
+                v-if="!state.registrationData.data.data?.userid ?? true"
+            >
                 <fieldset>
                     <div class="pure-g">
                         <div class="pure-u-1">
@@ -233,10 +255,19 @@ function showAndDisplayresults(show = true) {
                     class="pure-button pure-button-primary"
                     :class="!disableRegister && 'pure-button-disabled'"
                     @click="makeRegisterCall"
+                    v-if="!state.registrationData.isFetching"
                 >
                     Register
                 </button>
+                <button v-else class="pure-button" disabled="true" type="button">
+                    <i class="fa fa-circle-o-notch fa-spin fa-2x fa-fw"></i>
+                    <span class="sr-only">Loading...</span>
+                </button>
             </form>
+            <section v-else>
+                <h1>Registration Successful</h1>
+                <button type="submit" class="pure-button pure-button-primary" @click="onLoginClicked">Login</button>
+            </section>
         </template>
     </AuthCard>
 </template>
