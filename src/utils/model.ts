@@ -13,6 +13,7 @@ export interface IRegisterRequestBody {
 
 export interface IDecodedToken extends IDetails {
     exp: number;
+    userId: string;
 }
 
 export interface IRegisterResponse {
@@ -34,7 +35,7 @@ export interface IToken {
 
 export interface IAuthRequest {
     email: string;
-    passwrod: string;
+    password: string;
 }
 
 export const initialRegisterObject: IRegisterResponse = { status: '', message: '', data: { userid: '' } };
