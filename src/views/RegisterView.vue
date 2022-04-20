@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import type { IRegister } from '@/utils/model';
+import {
+    type IRegisterRequestBody,
+    createNetworkObject,
+    type INetworkData,
+    type IRegisterResponse,
+    initialRegisterObject,
+} from '@/utils/model';
+import { post } from '@/utils/networkUtils';
 import { validateEmail, validatePassword } from '@/utils/validationUtils';
 import { computed, reactive } from 'vue';
 import AuthCard from '../components/AuthCard.vue';
@@ -18,7 +25,6 @@ const initialInputState: IInputState = {
 interface IState {
     firstName: IInputState;
     lastName: IInputState;
-    selectedCountry: string;
     countryList: string[];
     occupation: string;
     password: IInputState;
@@ -26,6 +32,7 @@ interface IState {
     countryInput: string;
     showResults: boolean;
     filteredCountries: string[];
+    registrationData: INetworkData<IRegisterResponse>;
 }
 
 const componentIDs = {
@@ -40,7 +47,6 @@ const componentIDs = {
 const initialState: IState = {
     firstName: { ...initialInputState },
     lastName: { ...initialInputState },
-    selectedCountry: '',
     countryList: countries,
     occupation: '',
     password: { ...initialInputState },
@@ -48,20 +54,16 @@ const initialState: IState = {
     countryInput: '',
     showResults: false,
     filteredCountries: [],
+    registrationData: createNetworkObject<IRegisterResponse>(initialRegisterObject),
 };
 
 const state: IState = reactive(initialState);
 
 function onCountryClicked(country: string) {
-    state.selectedCountry = country;
+    state.countryInput = country;
     console.log(country);
     state.showResults = false;
     state.filteredCountries = [];
-}
-
-function getCountryValue() {
-    if (state.selectedCountry.length < 1) return state.countryInput;
-    return state.selectedCountry;
 }
 
 function onCountryChanged(e: Event) {
@@ -94,7 +96,11 @@ const disableRegister = computed(
 
 async function makeRegisterCall() {
     try {
-        const body: IRegister = {
+        const isStateValid =
+            state.firstName.isValid && state.lastName.isValid && state.email.isValid && state.password.isValid;
+        if (!isStateValid) return;
+        state.registrationData = createNetworkObject<IRegisterResponse>(initialRegisterObject, true);
+        const body: IRegisterRequestBody = {
             email: state.email.input,
             password: state.password.input,
             details: {
@@ -102,16 +108,13 @@ async function makeRegisterCall() {
                 lastName: state.lastName.input,
             },
         };
-        state.selectedCountry && (body.details.country = state.selectedCountry);
+        state.countryInput && (body.details.country = state.countryInput);
         state.occupation && (body.details.occupation = state.occupation);
-        const response = await fetch('http://3.87.55.122/user/add', {
-            method: 'POST',
-            body: JSON.stringify(body),
-            headers: { 'Content-Type': 'application/json' },
-        });
-        console.log(await response.json());
+        const response = await post<IRegisterResponse, IRegisterRequestBody>('user/add', body);
+        state.registrationData = createNetworkObject(response, false);
     } catch (error) {
         console.error(error);
+        state.registrationData = createNetworkObject(initialRegisterObject, false, true);
     }
 }
 
@@ -129,12 +132,20 @@ function showAndDisplayresults(show = true) {
         state.showResults = show;
     };
 }
+
+function onLoginClicked(e: MouseEvent | Event) {
+    // everything is in order initiate network call
+}
 </script>
 
 <template>
     <AuthCard heading="Register" name="register">
         <template #default>
-            <form class="pure-form pure-form-stacked" @submit.prevent="">
+            <form
+                class="pure-form pure-form-stacked"
+                @submit.prevent=""
+                v-if="!state.registrationData.data.data?.userid ?? true"
+            >
                 <fieldset>
                     <div class="pure-g">
                         <div class="pure-u-1">
@@ -166,7 +177,7 @@ function showAndDisplayresults(show = true) {
                         <div class="pure-u-1">
                             <label :for="componentIDs.country">Country</label>
                             <input
-                                :value="getCountryValue()"
+                                :value="state.countryInput"
                                 @input="onCountryChanged"
                                 class="pure-input-1"
                                 type="text"
@@ -233,10 +244,19 @@ function showAndDisplayresults(show = true) {
                     class="pure-button pure-button-primary"
                     :class="!disableRegister && 'pure-button-disabled'"
                     @click="makeRegisterCall"
+                    v-if="!state.registrationData.isFetching"
                 >
                     Register
                 </button>
+                <button v-else class="pure-button" disabled="true" type="button">
+                    <i class="fa fa-circle-o-notch fa-spin fa-2x fa-fw"></i>
+                    <span class="sr-only">Loading...</span>
+                </button>
             </form>
+            <section v-else>
+                <h1>Registration Successful</h1>
+                <button type="submit" class="pure-button pure-button-primary" @click="onLoginClicked">Login</button>
+            </section>
         </template>
     </AuthCard>
 </template>

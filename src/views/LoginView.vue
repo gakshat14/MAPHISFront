@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import router from '@/router';
+import { useUserStore } from '@/stores/user';
 import { validateEmail, validatePassword } from '@/utils/validationUtils';
 import { reactive } from 'vue';
 import { RouterLink } from 'vue-router';
@@ -9,26 +11,44 @@ interface IState {
     password: string;
     isEmailValid: boolean;
     isPasswordValid: boolean;
+    isLoggingIn: boolean;
 }
 
-const state: IState = reactive({ email: '', password: '', isEmailValid: true, isPasswordValid: true });
+const state: IState = reactive({
+    email: '',
+    password: '',
+    isEmailValid: false,
+    isPasswordValid: false,
+    isLoggingIn: false,
+});
 
-function onLoginClicked(e: MouseEvent | Event) {
-    // validate email and password
-    const isEmailValid = validateEmail(state.email);
-    const isPasswordValid = validatePassword(state.password);
+enum componentIDs {
+    email = 'email',
+    password = 'password',
+}
 
-    if (!isEmailValid) {
-        state.isEmailValid = false;
-        return;
+const user = useUserStore();
+
+function validationService(e: Event) {
+    switch ((e.target as HTMLInputElement).id) {
+        case componentIDs.email:
+            state.isEmailValid = validateEmail(state.email);
+            break;
+        case componentIDs.password:
+            state.isPasswordValid = validatePassword(state.password);
+            break;
+        default:
+            break;
     }
+}
 
-    if (!isPasswordValid) {
-        state.isPasswordValid = false;
-        return;
+async function onLoginClicked(e: MouseEvent | Event) {
+    try {
+        const response = await user.authenticateUser(state.email, state.password);
+        router.push({ name: 'dashboard', params: { userId: response.userId } });
+    } catch (error) {
+        console.error(error);
     }
-
-    // everything is in order initiate network call
 }
 </script>
 
@@ -36,10 +56,33 @@ function onLoginClicked(e: MouseEvent | Event) {
     <AuthCard name="login" heading="Login">
         <template #default>
             <form @submit.prevent="">
-                <input v-model="state.email" type="email" name="email" id="email" placeholder="Email" />
-                <input v-model="state.password" type="password" name="password" id="password" placeholder="password" />
+                <input
+                    @blur="validationService"
+                    v-model="state.email"
+                    type="email"
+                    name="email"
+                    :id="componentIDs.email"
+                    placeholder="Email"
+                    :class="!state.isEmailValid && 'invalid'"
+                />
+                <input
+                    @blur="validationService"
+                    v-model="state.password"
+                    type="password"
+                    name="password"
+                    :id="componentIDs.password"
+                    placeholder="password"
+                    :class="!state.isPasswordValid && 'invalid'"
+                />
                 <RouterLink to="/forgot">Forgot Password</RouterLink>
-                <button type="submit" class="pure-button pure-button-primary" @click="onLoginClicked">Login</button>
+                <button
+                    :disabled="!state.isEmailValid || !state.isPasswordValid"
+                    type="submit"
+                    class="pure-button pure-button-primary"
+                    @click="onLoginClicked"
+                >
+                    Login
+                </button>
             </form>
         </template>
         <template #footer>

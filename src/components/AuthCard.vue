@@ -50,4 +50,8 @@ article.auth-card {
     padding: var(--padding);
     background: #fff;
 }
+.pure-form input.invalid {
+    color: #b94a48;
+    border-color: #e9322d;
+}
 </style>
