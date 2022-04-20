@@ -6,6 +6,7 @@ import {
     type IRegisterResponse,
     initialRegisterObject,
 } from '@/utils/model';
+import { post } from '@/utils/networkUtils';
 import { validateEmail, validatePassword } from '@/utils/validationUtils';
 import { computed, reactive } from 'vue';
 import AuthCard from '../components/AuthCard.vue';
@@ -24,7 +25,6 @@ const initialInputState: IInputState = {
 interface IState {
     firstName: IInputState;
     lastName: IInputState;
-    selectedCountry: string;
     countryList: string[];
     occupation: string;
     password: IInputState;
@@ -47,7 +47,6 @@ const componentIDs = {
 const initialState: IState = {
     firstName: { ...initialInputState },
     lastName: { ...initialInputState },
-    selectedCountry: '',
     countryList: countries,
     occupation: '',
     password: { ...initialInputState },
@@ -61,15 +60,10 @@ const initialState: IState = {
 const state: IState = reactive(initialState);
 
 function onCountryClicked(country: string) {
-    state.selectedCountry = country;
+    state.countryInput = country;
     console.log(country);
     state.showResults = false;
     state.filteredCountries = [];
-}
-
-function getCountryValue() {
-    if (state.selectedCountry.length < 1) return state.countryInput;
-    return state.selectedCountry;
 }
 
 function onCountryChanged(e: Event) {
@@ -114,15 +108,10 @@ async function makeRegisterCall() {
                 lastName: state.lastName.input,
             },
         };
-        state.selectedCountry && (body.details.country = state.selectedCountry);
+        state.countryInput && (body.details.country = state.countryInput);
         state.occupation && (body.details.occupation = state.occupation);
-        const response = await fetch('http://localhost:5998/user/add', {
-            method: 'POST',
-            body: JSON.stringify(body),
-            headers: { 'Content-Type': 'application/json' },
-        });
-        const parsedResponse: IRegisterResponse = await response.json();
-        state.registrationData = createNetworkObject(parsedResponse, false);
+        const response = await post<IRegisterResponse, IRegisterRequestBody>('user/add', body);
+        state.registrationData = createNetworkObject(response, false);
     } catch (error) {
         console.error(error);
         state.registrationData = createNetworkObject(initialRegisterObject, false, true);
@@ -188,7 +177,7 @@ function onLoginClicked(e: MouseEvent | Event) {
                         <div class="pure-u-1">
                             <label :for="componentIDs.country">Country</label>
                             <input
-                                :value="getCountryValue()"
+                                :value="state.countryInput"
                                 @input="onCountryChanged"
                                 class="pure-input-1"
                                 type="text"
