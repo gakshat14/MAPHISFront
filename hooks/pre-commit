@@ -1,0 +1,31 @@
+#!/bin/sh
+
+set -eo pipefail
+
+# get the list of updated files
+FILES=$(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g')
+[ -z "$FILES" ] && exit 0
+
+echo -e "**********\033[31m\033[1mBeautifying\033[0m**********"
+# Prettify all selected files
+echo "$FILES" | xargs ./node_modules/.bin/prettier --ignore-unknown --write
+echo ""
+echo ""
+
+echo -e "**********\033[31m\033[1mLinting\033[0m**********"
+# Lint the code
+echo "$FILES" | xargs ./node_modules/.bin/eslint --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore --ignore-pattern "*-commit"
+echo ""
+echo ""
+
+# typecheck it
+echo -e "**********\033[31m\033[1mTypechecking\033[0m**********"
+./node_modules/.bin/vue-tsc --noEmit -p tsconfig.vitest.json --composite false
+echo ""
+echo ""
+
+# Add back the modified/prettified files to staging
+echo "******All good staging files********"
+echo "$FILES" | xargs git add
+
+exit 2
