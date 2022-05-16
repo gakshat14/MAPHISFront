@@ -128,7 +128,7 @@ function displayResults() {
 }
 
 function showAndDisplayresults(show = true) {
-    return function (e: FocusEvent) {
+    return function () {
         state.showResults = show;
     };
 }
