@@ -28,4 +28,4 @@ echo ""
 echo "******All good staging files********"
 echo "$FILES" | xargs git add
 
-exit 2
+exit 0
