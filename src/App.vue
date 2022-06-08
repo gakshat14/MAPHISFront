@@ -6,11 +6,13 @@ import { useUserStore } from './stores/user';
 const user = useUserStore();
 
 onMounted(() => {
-    if (!user.isUserAuthenticated()) {
-        router.push({ name: 'login' });
-    } else {
-        router.push({ name: 'dashboard', params: { userId: user.userId } });
-    }
+    // if (!user.isUserAuthenticated()) {
+    //     router.push({ name: 'login' });
+    // } else {
+    //     router.push({ name: 'dashboard', params: { userId: user.userId } });
+    // }
+
+    router.push({ name: 'dashboard', params: { userId: 'akshdat' } });
 });
 </script>
 

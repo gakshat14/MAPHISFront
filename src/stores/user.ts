@@ -1,7 +1,7 @@
 import { ACCESS_TOKEN } from '@/utils/constants';
 import type { IAuthRequest, IToken } from '@/utils/model';
 import { post } from '@/utils/networkUtils';
-import { decodeJWTToken, retrieveFromStorage, storeInSessionStorage } from '@/utils/securityUtils';
+import { decodeJWTToken, deleteFromStorage, retrieveFromStorage, storeInSessionStorage } from '@/utils/securityUtils';
 import { defineStore } from 'pinia';
 
 interface IState {
@@ -54,6 +54,10 @@ export const useUserStore = defineStore({
                 console.error(error);
                 return false;
             }
+        },
+        logoutUser(): void {
+            this.$reset();
+            deleteFromStorage(ACCESS_TOKEN);
         },
     },
 });
