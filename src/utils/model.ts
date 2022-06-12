@@ -38,8 +38,19 @@ export interface IAuthRequest {
     password: string;
 }
 
-export const initialRegisterObject: IRegisterResponse = { status: '', message: '', data: { userid: '' } };
+export interface ILandingProperties {
+    name: string;
+}
 
-export function createNetworkObject<T>(data: T, isFetching = false, error = false): INetworkData<T> {
-    return { isFetching, data, error };
+export interface IResearcherProps extends ILandingProperties {
+    text: string;
+}
+
+export interface IUniProps extends ILandingProperties {
+    image: string;
+}
+
+export interface ILandingPageData {
+    researchers: IResearcherProps[];
+    participatingInstitute: IUniProps[];
 }
