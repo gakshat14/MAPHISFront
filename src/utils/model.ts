@@ -43,7 +43,7 @@ export interface ILandingProperties {
 }
 
 export interface IResearcherProps extends ILandingProperties {
-    text: string;
+    designation: string;
 }
 
 export interface IUniProps extends ILandingProperties {

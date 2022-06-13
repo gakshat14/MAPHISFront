@@ -14,7 +14,7 @@ echo ""
 
 echo -e "**********\033[31m\033[1mLinting\033[0m**********"
 # Lint the code
-echo "$FILES" | xargs ./node_modules/.bin/eslint --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore --ignore-pattern "*-commit" --ignore-pattern "Dockerfile" --ignore-pattern *.png --ignore-pattern *.html
+echo "$FILES" | xargs ./node_modules/.bin/eslint --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore --ignore-pattern "*-commit" --ignore-pattern "Dockerfile" --ignore-pattern *.png --ignore-pattern *.html --ignore-pattern *.jpg --ignore-pattern *.svg
 echo ""
 echo ""
 
