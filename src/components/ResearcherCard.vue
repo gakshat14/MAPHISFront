@@ -7,8 +7,8 @@ export interface IProps {
 const props = defineProps<IProps>();
 </script>
 <template>
-    <p :class="props.isInline ? 'inline' : ''">{{ props.name }}</p>
-    <p :class="props.isInline ? 'inline' : ''">&nbsp;({{ props.designation }})</p>
+    <p class="name" :class="props.isInline ? 'inline' : ''">{{ props.name }}</p>
+    <p class="designation" :class="props.isInline ? 'inline' : ''">{{ props.designation }}</p>
 </template>
 <style>
 .inline {
