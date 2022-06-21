@@ -95,7 +95,8 @@ async function onLoginClicked(e: MouseEvent | Event) {
     </AuthCard>
 </template>
 
-<style>
+<!-- Using scoped mode so that style is applied only to this component -->
+<style scoped>
 form {
     display: flex;
     flex-direction: column;

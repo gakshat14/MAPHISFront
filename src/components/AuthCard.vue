@@ -1,5 +1,5 @@
 <script setup lang="ts">
-interface IProps {
+export interface IProps {
     name: 'login' | 'register';
     heading: string;
 }
