@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/user';
 import LogoutButton from '../components/LogoutButton.vue';
+import LeafLet from '../components/LeafLet.vue';
 
 const user = useUserStore();
 </script>
@@ -14,7 +15,9 @@ const user = useUserStore();
                 <LogoutButton />
             </footer>
         </div>
-        <div class="dashboard-application"></div>
+        <div class="dashboard-application">
+            <LeafLet />
+        </div>
     </section>
 </template>
 
