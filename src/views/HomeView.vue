@@ -13,10 +13,10 @@ function onLoginClicked(e: MouseEvent) {
             <h1 id="logo">MAPHIS</h1>
             <nav>
                 <ul id="navigation-container">
-                    <li><a href="#home">Home</a></li>
+                    <!-- <li><a href="#home">Home</a></li>
                     <li v-for="section in sections" :key="section.id">
                         <a :href="`#${section.id}`">{{ section.heading }}</a>
-                    </li>
+                    </li> -->
                     <li id="login-button-container">
                         <button @click="onLoginClicked" type="button">Login</button>
                     </li>
@@ -31,16 +31,19 @@ function onLoginClicked(e: MouseEvent) {
             </div>
         </div>
         <div class="universities clear-fix">
-            <ul>
-                <template
-                    v-for="(institute, index) in landingPageData.participatingInstitute"
-                    :key="`university_${index}`"
-                >
-                    <li v-if="index <= 3">
-                        <img :src="`/src/images/${institute.image}`" :alt="institute.name" />
-                    </li>
-                </template>
-            </ul>
+            <section>
+                <h2>Participating Institute</h2>
+                <ul>
+                    <template
+                        v-for="(institute, index) in landingPageData.participatingInstitute"
+                        :key="`university_${index}`"
+                    >
+                        <li v-if="index <= 3">
+                            <img :src="`/src/images/${institute.image}`" :alt="institute.name" />
+                        </li>
+                    </template>
+                </ul>
+            </section>
         </div>
     </header>
     <main>
@@ -100,9 +103,9 @@ header > .navbar {
 #logo {
     flex-grow: 2;
 }
-nav {
+/* nav {
     flex-grow: 1.2;
-}
+} */
 nav > ul {
     display: inline-flex;
     justify-content: space-between;
@@ -158,14 +161,18 @@ ul {
 .universities {
     margin-top: 13rem;
 }
-.universities ul {
+
+.universities section {
     background: #fc8e61;
-    display: flex;
     float: right;
-    border-radius: 10px 0 0 10px;
     width: 88%;
-    justify-content: space-between;
     padding: 20px;
+    border-radius: 10px 0 0 10px;
+}
+
+.universities ul {
+    display: flex;
+    justify-content: space-between;
     flex-wrap: wrap;
     align-items: center;
 }
@@ -215,8 +222,8 @@ ul {
 }
 
 @media (min-width: 1440px) {
-    .universities ul {
-        width: 70%;
+    .universities section {
+        width: 60%;
     }
 }
 </style>
