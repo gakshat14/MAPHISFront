@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import {
-    type IRegisterRequestBody,
-    createNetworkObject,
-    type INetworkData,
-    type IRegisterResponse,
-    initialRegisterObject,
-} from '@/utils/model';
-import { post } from '@/utils/networkUtils';
+import { initialRegisterObject } from '@/utils/constants';
+import type { INetworkData, IRegisterRequestBody, IRegisterResponse } from '@/utils/model';
+import { createNetworkObject, post } from '@/utils/networkUtils';
 import { validateEmail, validatePassword } from '@/utils/validationUtils';
 import { computed, reactive } from 'vue';
 import AuthCard from '../components/AuthCard.vue';
