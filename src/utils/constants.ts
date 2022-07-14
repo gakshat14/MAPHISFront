@@ -27,4 +27,4 @@ export const landingPageData: ILandingPageData = {
     ],
 };
 
-export const initialRegisterObject: IRegisterResponse = { status: '', message: '', data: { userid: '' } };
+export const initialRegisterObject: IRegisterResponse = { userid: '' };

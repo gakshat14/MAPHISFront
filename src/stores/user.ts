@@ -27,7 +27,7 @@ export const useUserStore = defineStore({
     actions: {
         async authenticateUser(email: string, password: string) {
             try {
-                const response = await post<IToken, IAuthRequest>('auth', {
+                const response = await post<IToken, IAuthRequest>('auth/auth', {
                     email: email,
                     password: password,
                 });

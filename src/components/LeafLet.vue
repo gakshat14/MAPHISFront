@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-//@ts-ignore
+import { onMounted } from 'vue';
 import {
     map,
     tileLayer,
     type TileLayerOptions,
     CRS,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-ignore
     RasterCoords,
     geoJSON,
     type PointExpression,
-    type Content,
 } from 'leaflet';
-import { uri } from '@/utils/networkUtils';
+import { uri_without_version } from '@/utils/networkUtils';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+//@ts-ignore
 import { tile_data_text } from '../geojson/text';
 import '../../node_modules/leaflet-rastercoords/rastercoords.js';
 
 const region = 'york';
-const foo = ref<HTMLElement>();
 
 onMounted(() => {
     const img = [4096, 4096];
@@ -33,7 +33,7 @@ onMounted(() => {
         maxNativeZoom: rc.zoomLevel(),
     };
 
-    tileLayer(`${uri}map-tiles/${region}/{z}/{x}/{y}.jpg`, options).addTo(leafMap);
+    tileLayer(`${uri_without_version}map-tiles/${region}/{z}/{x}/{y}.jpg`, options).addTo(leafMap);
 
     const textLayer = geoJSON(tile_data_text.features, {
         coordsToLatLng: function (coords) {
@@ -41,7 +41,7 @@ onMounted(() => {
         },
         onEachFeature: function (feature, layer) {
             if (feature?.properties?.class) {
-                layer.bindPopup(() => foo.value?.innerHTML as Content);
+                layer.bindPopup(feature.properties.class);
             }
         },
         style: function (feature) {

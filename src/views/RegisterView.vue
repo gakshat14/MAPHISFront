@@ -127,10 +127,6 @@ function showAndDisplayresults(show = true) {
         state.showResults = show;
     };
 }
-
-function onLoginClicked(e: MouseEvent | Event) {
-    // everything is in order initiate network call
-}
 </script>
 
 <template>
@@ -139,7 +135,7 @@ function onLoginClicked(e: MouseEvent | Event) {
             <form
                 class="pure-form pure-form-stacked"
                 @submit.prevent=""
-                v-if="!state.registrationData.data.data?.userid ?? true"
+                v-if="!state.registrationData.data?.userid ?? true"
             >
                 <fieldset>
                     <div class="pure-g">
@@ -250,7 +246,7 @@ function onLoginClicked(e: MouseEvent | Event) {
             </form>
             <section v-else>
                 <h1>Registration Successful</h1>
-                <button type="submit" class="pure-button pure-button-primary" @click="onLoginClicked">Login</button>
+                <router-link title="Login" to="login">Login</router-link>
             </section>
         </template>
     </AuthCard>

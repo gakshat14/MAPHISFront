@@ -17,9 +17,7 @@ export interface IDecodedToken extends IDetails {
 }
 
 export interface IRegisterResponse {
-    status: string;
-    message: string;
-    data: { userid: string };
+    userid: string;
 }
 
 export interface INetworkData<T> {
