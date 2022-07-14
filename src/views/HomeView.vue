@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import { landingPageData, sections } from '../utils/constants';
+import { landingPageData } from '../utils/constants';
 import ResearcherCard from '../components/ResearcherCard.vue';
-import router from '@/router';
-function onLoginClicked(e: MouseEvent) {
-    router.push({ name: 'login' });
-}
 </script>
 
 <template>
@@ -18,7 +14,7 @@ function onLoginClicked(e: MouseEvent) {
                         <a :href="`#${section.id}`">{{ section.heading }}</a>
                     </li> -->
                     <li id="login-button-container">
-                        <button @click="onLoginClicked" type="button">Login</button>
+                        <router-link title="login" to="login">Login</router-link>
                     </li>
                 </ul>
             </nav>
@@ -121,12 +117,12 @@ li > a {
     font-weight: 400;
 }
 
-li > button {
+li#login-button-container > a {
     background-color: #1c8568;
     color: white;
-    border-color: transparent;
-    border-radius: 4px;
+    padding: 10px 15px;
 }
+
 .content {
     display: flex;
     margin-top: 2rem;

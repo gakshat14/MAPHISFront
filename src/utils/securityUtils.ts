@@ -16,3 +16,11 @@ export function retrieveFromStorage<T>(keyName: string): T | undefined {
 export function decodeJWTToken(token: string): IDecodedToken {
     return JSON.parse(atob(token.split('.')[1]));
 }
+
+/**
+ * Function to remove specified key from the session storage
+ * @param {string} key key to be deleted from the storage
+ */
+export function deleteFromStorage(key: string) {
+    window.sessionStorage.removeItem(key);
+}

@@ -24,3 +24,7 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+src/images/*
+
+.env
