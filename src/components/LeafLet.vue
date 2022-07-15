@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+export interface IProps {
+    region: string;
+    isClassifying: boolean;
+    focusedKey: string;
+}
+
+import { onMounted, watch } from 'vue';
 import {
     map,
     tileLayer,
@@ -10,6 +16,9 @@ import {
     RasterCoords,
     geoJSON,
     type PointExpression,
+    Map,
+    GeoJSON,
+    Polyline,
 } from 'leaflet';
 import { uri_without_version } from '@/utils/networkUtils';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -17,11 +26,24 @@ import { uri_without_version } from '@/utils/networkUtils';
 import { tile_data_text } from '../geojson/text';
 import '../../node_modules/leaflet-rastercoords/rastercoords.js';
 
-const region = 'york';
+const props = defineProps<IProps>();
+
+let leafMap: Map;
+let textLayer: GeoJSON<any>;
+
+function returnColorObject(colorFor: 'default' | 'classifying' | 'classified' = 'default') {
+    if (colorFor === 'classifying') {
+        return { fillColor: 'darkgray', color: '#d5d5d5' };
+    }
+    if (colorFor === 'classified') {
+        return { fillColor: 'green', color: 'green' };
+    }
+    return { fillColor: '#3388FF', color: '#3388FF' };
+}
 
 onMounted(() => {
     const img = [4096, 4096];
-    const leafMap = map('leaflet-container', { crs: CRS.Simple });
+    leafMap = map('leaflet-container', { crs: CRS.Simple });
     const rc = new RasterCoords(leafMap, img);
     leafMap.setView(rc.unproject([4096, 4096]), 2);
 
@@ -33,24 +55,42 @@ onMounted(() => {
         maxNativeZoom: rc.zoomLevel(),
     };
 
-    tileLayer(`${uri_without_version}map-tiles/${region}/{z}/{x}/{y}.jpg`, options).addTo(leafMap);
+    tileLayer(`${uri_without_version}map-tiles/${props.region}/{z}/{x}/{y}.jpg`, options).addTo(leafMap);
 
-    const textLayer = geoJSON(tile_data_text.features, {
+    textLayer = geoJSON(tile_data_text.features, {
         coordsToLatLng: function (coords) {
             return rc.unproject(coords as PointExpression);
-        },
-        onEachFeature: function (feature, layer) {
-            if (feature?.properties?.class) {
-                layer.bindPopup(feature.properties.class);
-            }
-        },
-        style: function (feature) {
-            return { fillColor: 'darkgray', color: '#d5d5d5', fillOpacity: 0.5 };
         },
     });
 
     leafMap.addLayer(textLayer);
 });
+
+watch(
+    () => props.isClassifying,
+    (newValue) => {
+        let colorStyle = returnColorObject();
+        if (newValue) {
+            colorStyle = { ...returnColorObject('classifying') };
+        }
+        textLayer.setStyle(colorStyle);
+    },
+);
+
+watch(
+    () => props.focusedKey,
+    (newValue) => {
+        if (!newValue) return;
+
+        textLayer.eachLayer((layer) => {
+            const layer_poly = layer as Polyline;
+            if (layer_poly?.feature?.properties.class === newValue) {
+                layer_poly.setStyle({ ...returnColorObject() });
+                layer_poly.bindPopup(newValue).openPopup();
+            }
+        });
+    },
+);
 </script>
 
 <template>

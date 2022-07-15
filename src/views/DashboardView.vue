@@ -1,22 +1,39 @@
 <script setup lang="ts">
-import { useUserStore } from '@/stores/user';
 import LogoutButton from '../components/LogoutButton.vue';
 import LeafLet from '../components/LeafLet.vue';
+import { useMapStore } from '@/stores/map';
+import { storeToRefs } from 'pinia';
 
-const user = useUserStore();
+// const user = useUserStore();
+const { isClassifying, currentKey, currentClassificationIndex } = storeToRefs(useMapStore());
+const { startClassification, nextClassification } = useMapStore();
+
+function onClassificationClicked() {
+    startClassification();
+}
+
+function onNextClicked() {
+    nextClassification(currentClassificationIndex.value);
+}
 </script>
 
 <template>
     <section class="dashboard-container">
         <div class="dashboard-menu">
             <header><h1>Maphis</h1></header>
-            <main>all the controls will come here</main>
+            <main>
+                <button v-if="!isClassifying" @click="onClassificationClicked">Start classification</button>
+                <div v-else>
+                    current key: {{ currentKey }}
+                    <button @click="onNextClicked">Next slide</button>
+                </div>
+            </main>
             <footer>
                 <LogoutButton />
             </footer>
         </div>
         <div class="dashboard-application">
-            <LeafLet />
+            <LeafLet region="york" :is-classifying="isClassifying" :focused-key="currentKey" />
         </div>
     </section>
 </template>
