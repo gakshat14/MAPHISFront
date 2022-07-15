@@ -9,7 +9,7 @@ onMounted(() => {
     if (!user.isUserAuthenticated()) {
         router.push({ name: 'home' });
     } else {
-        router.push({ name: 'dashboard', params: { userId: user.userId } });
+        router.push({ name: 'dashboard', query: { userId: user.user.user_id } });
     }
 });
 </script>
