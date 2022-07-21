@@ -1,22 +1,99 @@
 <script setup lang="ts">
-import { useUserStore } from '@/stores/user';
 import LogoutButton from '../components/LogoutButton.vue';
 import LeafLet from '../components/LeafLet.vue';
+import { useMapStore } from '@/stores/map';
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/stores/user';
+import { geoJsonOptions } from '../utils/constants';
+import { reactive } from 'vue';
 
-const user = useUserStore();
+export interface IState {
+    geojsonSelectValue: string;
+    classificationInput: string;
+}
+
+const { user } = useUserStore();
+
+const state: IState = reactive({ geojsonSelectValue: 'text', classificationInput: '' });
+
+const {
+    isClassifying,
+    total_features,
+    currentClassificationIndex,
+    skippedKeys,
+    classifiedKeys,
+    classifiedIndex,
+    currentKey,
+} = storeToRefs(useMapStore());
+const { startClassification, nextClassification, endClassification } = useMapStore();
+
+function onClassificationClicked() {
+    startClassification('york');
+}
+
+function onNextClicked() {
+    if (!state.classificationInput) {
+        nextClassification(currentClassificationIndex.value, 'york');
+    } else {
+        nextClassification(currentClassificationIndex.value, 'york', state.classificationInput);
+    }
+    state.classificationInput = '';
+}
+
+function onSkipClicked() {
+    nextClassification(currentClassificationIndex.value, 'york');
+}
+
+function onPreviousClicked() {
+    console.log('Previous clicked');
+}
+
+function onEndClassificationClicked() {
+    endClassification();
+}
 </script>
 
 <template>
     <section class="dashboard-container">
         <div class="dashboard-menu">
             <header><h1>Maphis</h1></header>
-            <main>all the controls will come here</main>
+            <main>
+                <div v-if="!isClassifying">
+                    <label for="feature_selector">Select features to highlight</label>
+                    <select v-model="state.geojsonSelectValue" name="Feature selection" id="feature_selector">
+                        <option :value="option.value" v-for="option in geoJsonOptions" :key="`geojson_${option.value}`">
+                            {{ option.text }}
+                        </option>
+                    </select>
+                    <button @click="onClassificationClicked">Start classification</button>
+                </div>
+                <div v-else>
+                    <div id="classification_input">
+                        <label for="text_input">Please enter the text you can see in the map</label>
+                        <input v-model="state.classificationInput" type="text" id="text_input" />
+                    </div>
+                    {{ `${currentClassificationIndex} / ${total_features}` }}
+                    <div id="button_container">
+                        <button @click="onPreviousClicked">Previous</button>
+                        <button @click="onSkipClicked">Skip</button>
+                        <button @click="onNextClicked">Next</button>
+                    </div>
+                    <button @click="onEndClassificationClicked">End classification</button>
+                </div>
+            </main>
             <footer>
                 <LogoutButton />
             </footer>
         </div>
         <div class="dashboard-application">
-            <LeafLet />
+            <LeafLet
+                :skipped-keys="skippedKeys"
+                region="york"
+                :is-classifying="isClassifying"
+                :focused-key="currentKey"
+                :classified-keys="classifiedKeys"
+                :classified-index="classifiedIndex"
+            />
         </div>
     </section>
 </template>

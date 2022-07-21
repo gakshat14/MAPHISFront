@@ -45,7 +45,7 @@ function validationService(e: Event) {
 async function onLoginClicked(e: MouseEvent | Event) {
     try {
         const response = await user.authenticateUser(state.email, state.password);
-        router.push({ name: 'dashboard', params: { userId: response.userId } });
+        router.push({ name: 'dashboard', query: { userId: response.userId } });
     } catch (error) {
         console.error(error);
     }

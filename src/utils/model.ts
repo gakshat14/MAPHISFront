@@ -11,9 +11,14 @@ export interface IRegisterRequestBody {
     details: IDetails;
 }
 
-export interface IDecodedToken extends IDetails {
+export interface IUser {
+    email: string;
+    details: IDetails;
+    user_id: string;
+}
+
+export interface IDecodedToken extends IUser {
     exp: number;
-    userId: string;
 }
 
 export interface IRegisterResponse {

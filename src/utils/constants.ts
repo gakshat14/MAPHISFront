@@ -28,3 +28,9 @@ export const landingPageData: ILandingPageData = {
 };
 
 export const initialRegisterObject: IRegisterResponse = { userid: '' };
+
+export const geoJsonOptions = [
+    { value: 'text', text: 'Text' },
+    { value: 'trees', text: 'Trees' },
+    { value: 'building', text: 'Buildings' },
+];
