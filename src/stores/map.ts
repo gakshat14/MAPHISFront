@@ -1,6 +1,8 @@
-import { get } from '@/utils/networkUtils';
+import type { INextRequest, INextResponse, IStartRequest, IStartResponse } from '@/models/classification';
+import { post } from '@/utils/networkUtils';
 import { defineStore } from 'pinia';
 import { classKeys } from '../geojson/sample_data';
+import { useUserStore } from './user';
 
 interface IState {
     isClassifying: boolean;
@@ -9,6 +11,9 @@ interface IState {
     currentKey: string;
     currentClassificationIndex: number;
     skippedKeys: string[];
+    isFetching: boolean;
+    classifiedIndex: number[];
+    total_features: number;
 }
 
 const initialState: IState = {
@@ -18,36 +23,67 @@ const initialState: IState = {
     currentKey: '',
     currentClassificationIndex: NaN,
     skippedKeys: [],
+    isFetching: false,
+    classifiedIndex: [],
+    total_features: NaN,
 };
+
+const { user } = useUserStore();
 
 export const useMapStore = defineStore({
     id: 'map',
     state: (): IState => ({ ...initialState }),
     actions: {
-        startClassification() {
-            const index = 0;
-            this.$patch({
-                isClassifying: !this.isClassifying,
-                currentClassificationIndex: index,
-                currentKey: this.keysToBeClassified[index],
-            });
+        async startClassification(map_id: string) {
+            try {
+                const response = await post<IStartResponse, IStartRequest>('classification/start', {
+                    map_id,
+                    user_id: user.user_id,
+                    reset: false,
+                });
+                const index = response.body.current_feature;
+                this.$patch({
+                    isClassifying: !this.isClassifying,
+                    currentClassificationIndex: index,
+                    currentKey: response.body.feature.properties.class,
+                    classifiedIndex: response.body.classified,
+                    total_features: response.body.total_features,
+                });
+            } catch (error) {
+                console.error(error);
+            }
         },
-        nextClassification(currentIndex: number, isSkipped = false) {
-            const newIndex = currentIndex + 1;
-            const newObject: Partial<IState> = {
-                currentClassificationIndex: newIndex,
-                currentKey: this.keysToBeClassified[newIndex],
-            };
-            isSkipped && (newObject.skippedKeys = [...this.skippedKeys, this.keysToBeClassified[currentIndex]]);
-            !isSkipped && (newObject.classifiedKeys = [...this.classifiedKeys, this.keysToBeClassified[currentIndex]]);
-            this.$patch(newObject);
+        async nextClassification(currentIndex: number, map_id: string, featureValue = '') {
+            try {
+                // const newIndex = currentIndex + 1;
+                const requestBody: Partial<INextRequest> = {
+                    map_id,
+                    user_id: user.user_id,
+                    current_feature: currentIndex,
+                };
+                const newObject: Partial<IState> = {};
+                if (!featureValue) {
+                    requestBody.save = false;
+                    newObject.skippedKeys = [...this.skippedKeys, this.keysToBeClassified[currentIndex]];
+                } else {
+                    requestBody.save = true;
+                    requestBody.content = { value: featureValue };
+                    // newObject.classifiedKeys = [...this.classifiedKeys, this.keysToBeClassified[currentIndex]];
+                }
+                const response = await post<INextResponse, Partial<INextRequest>>(
+                    'classification/feature/next',
+                    requestBody,
+                );
+                newObject.currentClassificationIndex = response.body.current_feature;
+                newObject.currentKey = response.body.feature.properties.class;
+                newObject.classifiedIndex = response.body.classified;
+                this.$patch(newObject);
+            } catch (error) {
+                console.error(error);
+            }
         },
-        // async initialise() {
-        //     try {
-        //         const alreadyClassifiedKeys = await get<>('classification/feature/classified')
-        //     } catch (error) {
-
-        //     }
-        // }
+        endClassification() {
+            this.isClassifying = false;
+        },
     },
 });

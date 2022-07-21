@@ -5,6 +5,7 @@ export interface IProps {
     focusedKey: string;
     skippedKeys: string[];
     classifiedKeys: string[];
+    classifiedIndex: number[];
 }
 
 import { onMounted, watch } from 'vue';
@@ -90,7 +91,9 @@ watch(
     () => props.focusedKey,
     (newValue) => {
         if (!newValue) return;
+        let count = -1;
         textLayer.eachLayer((layer) => {
+            ++count;
             const layerPoly = layer as Polyline;
             const currentClass = layerPoly?.feature?.properties.class;
             if (currentClass === newValue) {
@@ -100,7 +103,10 @@ watch(
             if (props.skippedKeys.includes(currentClass)) {
                 layerPoly.setStyle({ ...returnColorObject('skipped') });
             }
-            if (props.classifiedKeys.includes(currentClass)) {
+            // if (props.classifiedKeys.includes(currentClass)) {
+            //     layerPoly.setStyle({ ...returnColorObject('classified') });
+            // }
+            if (props.classifiedIndex.includes(count)) {
                 layerPoly.setStyle({ ...returnColorObject('classified') });
             }
         });

@@ -57,10 +57,3 @@ export interface ILandingPageData {
     researchers: IResearcherProps[];
     participatingInstitute: IUniProps[];
 }
-
-export interface ICommonClassificationRequest {
-    user_id: string;
-    map_id: string;
-}
-
-export type IFeatureClassifiedBody = ICommonClassificationRequest;

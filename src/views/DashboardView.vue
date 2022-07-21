@@ -16,30 +16,40 @@ const { user } = useUserStore();
 
 const state: IState = reactive({ geojsonSelectValue: 'text', classificationInput: '' });
 
-const { isClassifying, currentKey, currentClassificationIndex, skippedKeys, classifiedKeys } = storeToRefs(
-    useMapStore(),
-);
-const { startClassification, nextClassification } = useMapStore();
+const {
+    isClassifying,
+    total_features,
+    currentClassificationIndex,
+    skippedKeys,
+    classifiedKeys,
+    classifiedIndex,
+    currentKey,
+} = storeToRefs(useMapStore());
+const { startClassification, nextClassification, endClassification } = useMapStore();
 
 function onClassificationClicked() {
-    startClassification();
+    startClassification('york');
 }
 
 function onNextClicked() {
     if (!state.classificationInput) {
-        nextClassification(currentClassificationIndex.value, true);
+        nextClassification(currentClassificationIndex.value, 'york');
     } else {
-        nextClassification(currentClassificationIndex.value);
+        nextClassification(currentClassificationIndex.value, 'york', state.classificationInput);
     }
     state.classificationInput = '';
 }
 
 function onSkipClicked() {
-    nextClassification(currentClassificationIndex.value, true);
+    nextClassification(currentClassificationIndex.value, 'york');
 }
 
 function onPreviousClicked() {
     console.log('Previous clicked');
+}
+
+function onEndClassificationClicked() {
+    endClassification();
 }
 </script>
 
@@ -62,13 +72,13 @@ function onPreviousClicked() {
                         <label for="text_input">Please enter the text you can see in the map</label>
                         <input v-model="state.classificationInput" type="text" id="text_input" />
                     </div>
-                    current key: {{ currentKey }}
+                    {{ `${currentClassificationIndex} / ${total_features}` }}
                     <div id="button_container">
-                        <button @click="onNextClicked">Next</button>
-                        <button @click="onSkipClicked">Skip</button>
                         <button @click="onPreviousClicked">Previous</button>
+                        <button @click="onSkipClicked">Skip</button>
+                        <button @click="onNextClicked">Next</button>
                     </div>
-                    <button>End classification</button>
+                    <button @click="onEndClassificationClicked">End classification</button>
                 </div>
             </main>
             <footer>
@@ -82,6 +92,7 @@ function onPreviousClicked() {
                 :is-classifying="isClassifying"
                 :focused-key="currentKey"
                 :classified-keys="classifiedKeys"
+                :classified-index="classifiedIndex"
             />
         </div>
     </section>

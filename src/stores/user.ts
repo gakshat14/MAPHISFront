@@ -33,12 +33,12 @@ export const useUserStore = defineStore({
                     email: email,
                     password: password,
                 });
-                const decodedToken = decodeJWTToken(response.access_token);
+                const decodedToken = decodeJWTToken(response.body.access_token);
                 this.$patch({
                     user: decodedToken,
-                    accessToken: `${response.token_type} ${response.access_token}`,
+                    accessToken: `${response.body.token_type} ${response.body.access_token}`,
                 });
-                storeInSessionStorage<IToken>(ACCESS_TOKEN, response);
+                storeInSessionStorage<IToken>(ACCESS_TOKEN, response.body);
                 return { userId: decodedToken.user_id };
             } catch (error: any) {
                 throw new Error(error.message);

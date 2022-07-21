@@ -106,7 +106,7 @@ async function makeRegisterCall() {
         state.countryInput && (body.details.country = state.countryInput);
         state.occupation && (body.details.occupation = state.occupation);
         const response = await post<IRegisterResponse, IRegisterRequestBody>('user/add', body);
-        state.registrationData = createNetworkObject(response, false);
+        state.registrationData = createNetworkObject(response.body, false);
     } catch (error) {
         console.error(error);
         state.registrationData = createNetworkObject(initialRegisterObject, false, true);
