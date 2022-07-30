@@ -86,6 +86,7 @@ async function onLoginClicked(e: MouseEvent | Event) {
             </form>
         </template>
         <template #footer>
+            <hr />
             <footer>
                 <RouterLink class="pure-button button-secondary create-button" to="/register"
                     >Create an account</RouterLink
@@ -129,8 +130,9 @@ form button {
 }
 
 footer {
-    background: #d5d5d5;
-    width: var(--width);
     padding: var(--padding);
+}
+footer hr {
+    max-width: 90%;
 }
 </style>

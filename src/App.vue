@@ -34,4 +34,10 @@ h5,
 h6 {
     font-family: 'Lora', serif;
 }
+
+.heading-text {
+    font-size: 4.45rem;
+    color: #9a3736;
+    margin: 0;
+}
 </style>
