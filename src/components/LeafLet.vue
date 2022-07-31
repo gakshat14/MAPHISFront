@@ -6,6 +6,7 @@ export interface IProps {
     skippedKeys: string[];
     classifiedKeys: string[];
     classifiedIndex: number[];
+    currentClassificationIndex: number;
 }
 
 import { onMounted, watch } from 'vue';
@@ -76,14 +77,41 @@ onMounted(() => {
     leafMap.addLayer(textLayer);
 });
 
+function changeMyColorPlease(currentlyFocussedKey: string) {
+    let count = -1;
+    textLayer.eachLayer((layer) => {
+        ++count;
+        const layerPoly = layer as Polyline;
+        const currentClass = layerPoly?.feature?.properties.class;
+        if (currentClass === currentlyFocussedKey) {
+            layerPoly.setStyle({ ...returnColorObject() });
+            layerPoly.bindPopup(currentlyFocussedKey).openPopup();
+        }
+        if (props.skippedKeys.includes(currentClass) || count < props.currentClassificationIndex) {
+            layerPoly.setStyle({ ...returnColorObject('skipped') });
+        }
+        // if (props.classifiedKeys.includes(currentClass)) {
+        //     layerPoly.setStyle({ ...returnColorObject('classified') });
+        // }
+        if (props.classifiedIndex.includes(count)) {
+            layerPoly.setStyle({ ...returnColorObject('classified') });
+        }
+    });
+}
+
 watch(
     () => props.isClassifying,
     (newValue) => {
-        let colorStyle = returnColorObject();
-        if (newValue) {
-            colorStyle = { ...returnColorObject('classifying') };
+        if (props.classifiedIndex.length === 0) {
+            let colorStyle = returnColorObject('classifying');
+            textLayer.setStyle(colorStyle);
+            return;
         }
-        textLayer.setStyle(colorStyle);
+        if (newValue) {
+            let colorStyle = returnColorObject('classifying');
+            textLayer.setStyle(colorStyle);
+            changeMyColorPlease(props.focusedKey);
+        }
     },
 );
 
@@ -91,25 +119,7 @@ watch(
     () => props.focusedKey,
     (newValue) => {
         if (!newValue) return;
-        let count = -1;
-        textLayer.eachLayer((layer) => {
-            ++count;
-            const layerPoly = layer as Polyline;
-            const currentClass = layerPoly?.feature?.properties.class;
-            if (currentClass === newValue) {
-                layerPoly.setStyle({ ...returnColorObject() });
-                layerPoly.bindPopup(newValue).openPopup();
-            }
-            if (props.skippedKeys.includes(currentClass)) {
-                layerPoly.setStyle({ ...returnColorObject('skipped') });
-            }
-            // if (props.classifiedKeys.includes(currentClass)) {
-            //     layerPoly.setStyle({ ...returnColorObject('classified') });
-            // }
-            if (props.classifiedIndex.includes(count)) {
-                layerPoly.setStyle({ ...returnColorObject('classified') });
-            }
-        });
+        changeMyColorPlease(newValue);
     },
 );
 </script>

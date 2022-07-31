@@ -93,6 +93,7 @@ function onEndClassificationClicked() {
                 :focused-key="currentKey"
                 :classified-keys="classifiedKeys"
                 :classified-index="classifiedIndex"
+                :current-classification-index="currentClassificationIndex"
             />
         </div>
     </section>
@@ -121,7 +122,7 @@ div.dashboard-menu footer {
     border-top: 1px solid #d5d5d5;
 }
 div.dashboard-application {
-    flex-grow: 3;
+    flex-grow: 12;
 }
 header,
 main,
