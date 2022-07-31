@@ -31,4 +31,12 @@ export interface INextRequest extends ICommonClassificationRequest {
     content?: { value: string };
 }
 
+export interface ISpecificFeatureRequest extends ICommonClassificationRequest {
+    feature_index: number;
+}
+
+export interface ISpecificFeatureResponse extends IStartResponse {
+    content?: { value: string };
+}
+
 export type INextResponse = IStartResponse;

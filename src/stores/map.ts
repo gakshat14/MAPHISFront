@@ -1,4 +1,11 @@
-import type { INextRequest, INextResponse, IStartRequest, IStartResponse } from '@/models/classification';
+import type {
+    INextRequest,
+    INextResponse,
+    ISpecificFeatureRequest,
+    ISpecificFeatureResponse,
+    IStartRequest,
+    IStartResponse,
+} from '@/models/classification';
 import { post } from '@/utils/networkUtils';
 import { defineStore } from 'pinia';
 import { classKeys } from '../geojson/sample_data';
@@ -77,6 +84,28 @@ export const useMapStore = defineStore({
                 newObject.currentClassificationIndex = response.body.current_feature;
                 newObject.currentKey = response.body.feature.properties.class;
                 newObject.classifiedIndex = response.body.classified;
+                this.$patch(newObject);
+            } catch (error) {
+                console.error(error);
+            }
+        },
+        async previousClassification(currentIndex: number, map_id: string) {
+            try {
+                const newIndex = currentIndex - 1;
+                const requestBody: ISpecificFeatureRequest = {
+                    user_id: user.user_id,
+                    map_id,
+                    feature_index: newIndex,
+                };
+                const response = await post<ISpecificFeatureResponse, ISpecificFeatureRequest>(
+                    'classification/feature/id',
+                    requestBody,
+                );
+                const newObject: Partial<IState> = {
+                    currentClassificationIndex: response.body.current_feature,
+                    currentKey: response.body.feature.properties.class,
+                    classifiedIndex: response.body.classified,
+                };
                 this.$patch(newObject);
             } catch (error) {
                 console.error(error);

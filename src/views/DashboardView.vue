@@ -12,7 +12,7 @@ export interface IState {
     classificationInput: string;
 }
 
-const { user } = useUserStore();
+const { getFullName } = useUserStore();
 
 const state: IState = reactive({ geojsonSelectValue: 'text', classificationInput: '' });
 
@@ -25,7 +25,7 @@ const {
     classifiedIndex,
     currentKey,
 } = storeToRefs(useMapStore());
-const { startClassification, nextClassification, endClassification } = useMapStore();
+const { startClassification, nextClassification, endClassification, previousClassification } = useMapStore();
 
 function onClassificationClicked() {
     startClassification('york');
@@ -45,7 +45,7 @@ function onSkipClicked() {
 }
 
 function onPreviousClicked() {
-    console.log('Previous clicked');
+    previousClassification(currentClassificationIndex.value, 'york');
 }
 
 function onEndClassificationClicked() {
@@ -56,7 +56,13 @@ function onEndClassificationClicked() {
 <template>
     <section class="dashboard-container">
         <div class="dashboard-menu">
-            <header><h1>Maphis</h1></header>
+            <header>
+                <h1>Maphis</h1>
+                <ul>
+                    <li>Hi {{ getFullName }}</li>
+                    <li><LogoutButton /></li>
+                </ul>
+            </header>
             <main>
                 <div v-if="!isClassifying">
                     <label for="feature_selector">Select features to highlight</label>
@@ -74,16 +80,13 @@ function onEndClassificationClicked() {
                     </div>
                     {{ `${currentClassificationIndex} / ${total_features}` }}
                     <div id="button_container">
-                        <button @click="onPreviousClicked">Previous</button>
+                        <button :disabled="currentClassificationIndex == 0" @click="onPreviousClicked">Previous</button>
                         <button @click="onSkipClicked">Skip</button>
                         <button @click="onNextClicked">Next</button>
                     </div>
                     <button @click="onEndClassificationClicked">End classification</button>
                 </div>
             </main>
-            <footer>
-                <LogoutButton />
-            </footer>
         </div>
         <div class="dashboard-application">
             <LeafLet
@@ -99,7 +102,7 @@ function onEndClassificationClicked() {
     </section>
 </template>
 
-<style>
+<style scoped>
 section.dashboard-container {
     display: inline-flex;
     height: 100vh;
@@ -128,5 +131,25 @@ header,
 main,
 footer {
     padding: 1px 5px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    background-color: var(--nav-colour);
+    color: #c4cbb6;
+}
+
+ul li {
+    display: inline-block;
+    list-style: none;
+}
+
+ul li:nth-child(2) {
+    margin-left: 10px;
+}
+
+main {
+    margin-top: 20px;
 }
 </style>

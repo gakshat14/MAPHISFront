@@ -22,6 +22,9 @@ onMounted(() => {
 * {
     box-sizing: border-box;
 }
+:root {
+    --nav-colour: #1b8264;
+}
 body {
     margin: 0;
     font-family: 'Montserrat', sans-serif;

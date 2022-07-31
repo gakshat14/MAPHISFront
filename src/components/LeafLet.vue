@@ -84,7 +84,7 @@ function changeMyColorPlease(currentlyFocussedKey: string) {
         const layerPoly = layer as Polyline;
         const currentClass = layerPoly?.feature?.properties.class;
         if (currentClass === currentlyFocussedKey) {
-            layerPoly.setStyle({ ...returnColorObject() });
+            layerPoly.setStyle({ ...returnColorObject('classifying') });
             layerPoly.bindPopup(currentlyFocussedKey).openPopup();
         }
         if (props.skippedKeys.includes(currentClass) || count < props.currentClassificationIndex) {
@@ -102,16 +102,19 @@ function changeMyColorPlease(currentlyFocussedKey: string) {
 watch(
     () => props.isClassifying,
     (newValue) => {
+        if (!newValue) {
+            textLayer.setStyle(returnColorObject('default'));
+            return;
+        }
         if (props.classifiedIndex.length === 0) {
             let colorStyle = returnColorObject('classifying');
             textLayer.setStyle(colorStyle);
             return;
         }
-        if (newValue) {
-            let colorStyle = returnColorObject('classifying');
-            textLayer.setStyle(colorStyle);
-            changeMyColorPlease(props.focusedKey);
-        }
+
+        let colorStyle = returnColorObject('classifying');
+        textLayer.setStyle(colorStyle);
+        changeMyColorPlease(props.focusedKey);
     },
 );
 

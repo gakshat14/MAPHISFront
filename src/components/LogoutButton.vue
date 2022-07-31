@@ -19,5 +19,7 @@ button {
     border: none;
     background: transparent;
     padding: 0;
+    vertical-align: middle;
+    color: #c4cbb6;
 }
 </style>
