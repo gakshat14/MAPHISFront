@@ -78,7 +78,7 @@ async function onLoginClicked(e: MouseEvent | Event) {
                 <button
                     :disabled="!state.isEmailValid || !state.isPasswordValid"
                     type="submit"
-                    class="pure-button pure-button-primary"
+                    class="pure-button button-primary"
                     @click="onLoginClicked"
                 >
                     Login
@@ -115,8 +115,7 @@ form button {
 }
 
 .button-secondary {
-    background: rgb(66, 184, 221);
-    /* this is a light blue */
+    background: var(--secondary-button-color);
     color: #fff;
 }
 
@@ -134,5 +133,8 @@ footer {
 }
 footer hr {
     max-width: 90%;
+}
+.button-primary {
+    background-color: var(--primary-button-color);
 }
 </style>

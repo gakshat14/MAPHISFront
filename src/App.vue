@@ -22,6 +22,10 @@ onMounted(() => {
 * {
     box-sizing: border-box;
 }
+:root {
+    --primary-button-color: #ad5c5b;
+    --secondary-button-color: #fc8e61;
+}
 body {
     margin: 0;
     font-family: 'Montserrat', sans-serif;
