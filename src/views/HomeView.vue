@@ -21,7 +21,7 @@ import ResearcherCard from '../components/ResearcherCard.vue';
         </div>
         <div class="content">
             <div>
-                <h1>MAPHIS</h1>
+                <h1 class="heading-text">MAPHIS</h1>
                 <h2 class="sub-heading">Mapping History</h2>
                 <p class="sub-text">Using Machine Learning to understand city development</p>
             </div>
@@ -128,11 +128,6 @@ li#login-button-container > a {
     margin-top: 2rem;
     padding-left: var(--root-padding-left);
     padding-right: var(--root-padding-right);
-}
-.content h1 {
-    font-size: 4.45rem;
-    color: #9a3736;
-    margin: 0;
 }
 .content h2,
 .content p {
