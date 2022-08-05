@@ -232,7 +232,7 @@ function showAndDisplayresults(show = true) {
                 <button
                     :disabled="!disableRegister"
                     type="submit"
-                    class="pure-button pure-button-primary"
+                    class="pure-button button-primary"
                     :class="!disableRegister && 'pure-button-disabled'"
                     @click="makeRegisterCall"
                     v-if="!state.registrationData.isFetching"
@@ -271,5 +271,9 @@ li.countries {
 .pure-form input.invalid {
     color: #b94a48;
     border-color: #e9322d;
+}
+.button-primary {
+    background-color: var(--primary-button-color);
+    color: #fff;
 }
 </style>

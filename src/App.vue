@@ -24,6 +24,8 @@ onMounted(() => {
 }
 :root {
     --nav-colour: #1b8264;
+    --primary-button-color: #ad5c5b;
+    --secondary-button-color: #fc8e61;
 }
 body {
     margin: 0;
@@ -36,5 +38,11 @@ h4,
 h5,
 h6 {
     font-family: 'Lora', serif;
+}
+
+.heading-text {
+    font-size: 4.45rem;
+    color: #9a3736;
+    margin: 0;
 }
 </style>

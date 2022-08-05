@@ -78,7 +78,7 @@ async function onLoginClicked(e: MouseEvent | Event) {
                 <button
                     :disabled="!state.isEmailValid || !state.isPasswordValid"
                     type="submit"
-                    class="pure-button pure-button-primary"
+                    class="pure-button button-primary"
                     @click="onLoginClicked"
                 >
                     Login
@@ -86,6 +86,7 @@ async function onLoginClicked(e: MouseEvent | Event) {
             </form>
         </template>
         <template #footer>
+            <hr />
             <footer>
                 <RouterLink class="pure-button button-secondary create-button" to="/register"
                     >Create an account</RouterLink
@@ -114,8 +115,7 @@ form button {
 }
 
 .button-secondary {
-    background: rgb(66, 184, 221);
-    /* this is a light blue */
+    background: var(--secondary-button-color);
     color: #fff;
 }
 
@@ -129,8 +129,12 @@ form button {
 }
 
 footer {
-    background: #d5d5d5;
-    width: var(--width);
     padding: var(--padding);
+}
+footer hr {
+    max-width: 90%;
+}
+.button-primary {
+    background-color: var(--primary-button-color);
 }
 </style>
