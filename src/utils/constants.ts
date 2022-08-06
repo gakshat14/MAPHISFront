@@ -31,6 +31,11 @@ export const initialRegisterObject: IRegisterResponse = { userid: '' };
 
 export const geoJsonOptions = [
     { value: 'text', text: 'Text' },
-    { value: 'trees', text: 'Trees' },
-    { value: 'building', text: 'Buildings' },
+    { value: 'vegetation', text: 'Trees' },
+    { value: 'imprint', text: 'Buildings' },
+];
+
+export const region = [
+    { value: 'Luton', text: 'Luton' },
+    { value: 'york', text: 'york' },
 ];

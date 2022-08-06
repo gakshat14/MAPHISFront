@@ -4,17 +4,19 @@ import LeafLet from '../components/LeafLet.vue';
 import { useMapStore } from '@/stores/map';
 import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/stores/user';
-import { geoJsonOptions } from '../utils/constants';
+import { geoJsonOptions, region } from '../utils/constants';
 import { reactive } from 'vue';
+import DropDown from '../components/Drop-down.vue';
 
 export interface IState {
     geojsonSelectValue: string;
     classificationInput: string;
+    regionSelectValue: string;
 }
 
 const { getFullName } = useUserStore();
 
-const state: IState = reactive({ geojsonSelectValue: 'text', classificationInput: '' });
+const state: IState = reactive({ geojsonSelectValue: 'text', classificationInput: '', regionSelectValue: 'york' });
 
 const {
     isClassifying,
@@ -40,16 +42,25 @@ function onNextClicked() {
     state.classificationInput = '';
 }
 
-function onSkipClicked() {
-    nextClassification(currentClassificationIndex.value, 'york');
-}
-
 function onPreviousClicked() {
     previousClassification(currentClassificationIndex.value, 'york');
 }
 
 function onEndClassificationClicked() {
     endClassification();
+}
+
+function updateRegionValue(e: Event) {
+    state.regionSelectValue = (e.target as HTMLInputElement).value;
+}
+
+function updateFeatureValue(e: Event) {
+    state.geojsonSelectValue = (e.target as HTMLInputElement).value;
+}
+
+function onFormSubmit(e: Event) {
+    e.preventDefault();
+    onClassificationClicked();
 }
 </script>
 
@@ -64,27 +75,64 @@ function onEndClassificationClicked() {
                 </ul>
             </header>
             <main>
-                <div v-if="!isClassifying">
-                    <label for="feature_selector">Select features to highlight</label>
-                    <select v-model="state.geojsonSelectValue" name="Feature selection" id="feature_selector">
-                        <option :value="option.value" v-for="option in geoJsonOptions" :key="`geojson_${option.value}`">
-                            {{ option.text }}
-                        </option>
-                    </select>
-                    <button @click="onClassificationClicked">Start classification</button>
-                </div>
+                <form v-if="!isClassifying" class="pure-form pure-form-stacked" @submit="onFormSubmit">
+                    <DropDown
+                        :value="state.regionSelectValue"
+                        name="Region"
+                        :options="region"
+                        label="Select a region"
+                        id="region_selector"
+                        @on-select-change="updateRegionValue"
+                    />
+                    <DropDown
+                        :value="state.geojsonSelectValue"
+                        name="Features"
+                        :options="geoJsonOptions"
+                        label="Select features to highlight"
+                        id="feature_selector"
+                        @on-select-change="updateFeatureValue"
+                    />
+                    <button type="submit" class="pure-button button-primary" @submit="onClassificationClicked">
+                        Start classification
+                    </button>
+                </form>
                 <div v-else>
-                    <div id="classification_input">
+                    <div
+                        class="pure-form pure-form-stacked"
+                        v-if="state.geojsonSelectValue === 'text'"
+                        id="classification_input"
+                    >
                         <label for="text_input">Please enter the text you can see in the map</label>
-                        <input v-model="state.classificationInput" type="text" id="text_input" />
+                        <input class="pure-input-1" v-model="state.classificationInput" type="text" id="text_input" />
                     </div>
-                    {{ `${currentClassificationIndex} / ${total_features}` }}
-                    <div id="button_container">
-                        <button :disabled="currentClassificationIndex == 0" @click="onPreviousClicked">Previous</button>
-                        <button @click="onSkipClicked">Skip</button>
-                        <button @click="onNextClicked">Next</button>
+                    <div v-if="state.geojsonSelectValue === 'vegetation'">
+                        <p>trees will come here</p>
                     </div>
-                    <button @click="onEndClassificationClicked">End classification</button>
+                    <div v-if="state.geojsonSelectValue === 'imprint'">
+                        <p>buildings will come here</p>
+                    </div>
+
+                    <div id="button-container">
+                        <button
+                            class="pure-button"
+                            :disabled="currentClassificationIndex == 0"
+                            @click="onPreviousClicked"
+                        >
+                            <i class="fa fa-angle-double-left fa-2x" aria-hidden="true"></i>
+                        </button>
+                        <p>{{ `${currentClassificationIndex + 1} / ${total_features}` }}</p>
+                        <button class="pure-button" @click="onNextClicked">
+                            <i class="fa fa-angle-double-right fa-2x" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <button
+                        id="end-classification-button"
+                        class="pure-button button-secondary"
+                        type="submit"
+                        @click="onEndClassificationClicked"
+                    >
+                        End classification
+                    </button>
                 </div>
             </main>
         </div>
@@ -150,6 +198,27 @@ ul li:nth-child(2) {
 }
 
 main {
+    margin-top: 20px;
+    padding: 0 20px;
+}
+
+form.pure-form-stacked :deep(label:nth-child(3)) {
+    margin-top: 20px;
+}
+
+.pure-button.button-primary {
+    margin-top: 20px;
+    background-color: var(--primary-button-color);
+    color: #fff;
+}
+
+div#button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+button#end-classification-button {
     margin-top: 20px;
 }
 </style>
