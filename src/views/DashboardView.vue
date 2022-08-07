@@ -139,12 +139,14 @@ function onFormSubmit(e: Event) {
         <div class="dashboard-application">
             <LeafLet
                 :skipped-keys="skippedKeys"
-                region="york"
+                :region="state.regionSelectValue"
                 :is-classifying="isClassifying"
                 :focused-key="currentKey"
                 :classified-keys="classifiedKeys"
                 :classified-index="classifiedIndex"
                 :current-classification-index="currentClassificationIndex"
+                :feature="state.geojsonSelectValue"
+                :img-size="state.regionSelectValue === 'york' ? [4096, 4096] : [34200, 37950]"
             />
         </div>
     </section>

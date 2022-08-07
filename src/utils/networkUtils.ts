@@ -29,13 +29,14 @@ export async function post<T, R>(endpoint: string, data: R): Promise<ICommonResp
     }
 }
 
-export async function get<T>(endpoint: string): Promise<ICommonResponseParam<T>> {
+export async function get<T>(uri: string, additionalParams?: RequestInit): Promise<ICommonResponseParam<T>> {
     try {
-        const params: RequestInit = {
+        let params: RequestInit = {
             ...commonParams,
             method: 'GET',
         };
-        const response = await fetch(`${uri}${endpoint}`, params);
+        additionalParams && (params = { ...params, ...additionalParams });
+        const response = await fetch(uri, params);
         const parsedResponse: T = await response.json();
         return Promise.resolve({ status: response.status, body: parsedResponse });
     } catch (error) {
