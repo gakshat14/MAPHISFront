@@ -66,13 +66,13 @@ function initLeafLet(region: string) {
         maxNativeZoom: rc.zoomLevel(),
     };
 
-    tileLayer(`${uri_without_version}static/tiles/${region}/{z}/{x}/{y}.jpg`, options).addTo(leafMap);
+    tileLayer(`http://54.89.211.203/static/tiles/${region}/{z}/{x}/{y}.jpg`, options).addTo(leafMap);
 }
 
 async function initGeoJson(region: string, featureToFetch: string) {
     try {
         const tileData = await import(
-            /* @vite-ignore */ `${uri_without_version}static/shapes/${region}/${featureToFetch}.js`
+            /* @vite-ignore */ `http://54.89.211.203/static/shapes/${region}/${featureToFetch}.js`
         );
 
         textLayer = geoJSON(tileData[`tile_data_${featureToFetch}`].features, {

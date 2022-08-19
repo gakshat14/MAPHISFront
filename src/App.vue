@@ -3,6 +3,7 @@ import { onMounted } from 'vue';
 import { RouterView } from 'vue-router';
 import router from './router';
 import { useUserStore } from './stores/user';
+import '@dafcoe/vue-notification/dist/vue-notification.css';
 const user = useUserStore();
 
 onMounted(() => {
