@@ -31,6 +31,7 @@ jobs:
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ${{ secrets.AWS_REGION }}
             - name: Stop existing running task
-              with:
-                  test-var: ${{ aws ecs describe-task-definition --task-definition maphis-ui-task --query 'taskDefinition.taskDefinitionArn' }}
-              run: echo $test_var
+              id: get_current_task
+              run: aws ecs describe-task-definition --task-definition maphis-ui-task --query 'taskDefinition.taskDefinitionArn'
+            - name: stop
+              run: echo "The selected color is ${{ steps.get_current_task.outputs }}"
