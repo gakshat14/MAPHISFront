@@ -34,4 +34,4 @@ jobs:
               id: get_current_task
               run: aws ecs describe-task-definition --task-definition maphis-ui-task --query 'taskDefinition.taskDefinitionArn'
             - name: stop
-              run: echo "The selected color is ${{ steps.get_current_task.outputs }}"
+              run: echo ${{ steps.get_current_task }}
