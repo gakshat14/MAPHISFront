@@ -52,6 +52,7 @@ jobs:
                   CLUSTER_DEFINITION: ${{ secrets.ECS_CLUSTER_NAME }}
               run: |
                   export EXISTING_TASK=$(aws ecs list-tasks --cluster $CLUSTER_DEFINITION --query "taskArns[0]")
+                  # This has been done so that we can remove "" from the output
                   export EXISTING_TASK=$(sed -e 's/^"//' -e 's/"$//' <<<"$EXISTING_TASK")
                   aws ecs stop-task --cluster $CLUSTER_DEFINITION --task $EXISTING_TASK
             - name: Deploy Amazon ECS task definition
