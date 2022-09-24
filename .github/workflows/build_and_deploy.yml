@@ -1,0 +1,64 @@
+name: Deploy to ECR
+
+on:
+    release:
+        types: [published]
+
+jobs:
+    build:
+        name: Build Image
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Check out code
+              uses: actions/checkout@v2
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v1
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ secrets.AWS_REGION }}
+
+            - name: Login to Amazon ECR
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v1
+
+            - name: Build, tag, and push image to Amazon ECR
+              id: build-image
+              env:
+                  ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+                  ECR_REPOSITORY: maphis
+                  IMAGE_TAG: ${{ github.event.release.tag_name }}
+              run: |
+                  docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+                  docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+                  echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+            - name: Download task definition
+              env:
+                  TASK_DEFINITION: ${{ secrets.ECS_TASK_DEFINITION_NAME }}
+              run: |
+                  aws ecs describe-task-definition --task-definition $TASK_DEFINITION --query taskDefinition > task-definition.json
+            - name: Fill in the new image ID in the Amazon ECS task definition
+              id: task-def
+              uses: aws-actions/amazon-ecs-render-task-definition@v1
+              with:
+                  task-definition: task-definition.json
+                  container-name: ${{ secrets.CONTAINER_NAME }}
+                  image: ${{ steps.build-image.outputs.image }}
+            - name: Stop existing task
+              env:
+                  TASK_DEFINITION: ${{ secrets.ECS_TASK_DEFINITION_NAME }}
+                  CLUSTER_DEFINITION: ${{ secrets.ECS_CLUSTER_NAME }}
+              run: |
+                  export EXISTING_TASK=$(aws ecs list-tasks --cluster $CLUSTER_DEFINITION --query "taskArns[0]")
+                  # This has been done so that we can remove "" from the output
+                  export EXISTING_TASK=$(sed -e 's/^"//' -e 's/"$//' <<<"$EXISTING_TASK")
+                  aws ecs stop-task --cluster $CLUSTER_DEFINITION --task $EXISTING_TASK
+            - name: Deploy Amazon ECS task definition
+              uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+              with:
+                  task-definition: ${{ steps.task-def.outputs.task-definition }}
+                  service: ${{ secrets.ECS_SERVICE_NAME }}
+                  cluster: ${{ secrets.ECS_CLUSTER_NAME }}
+                  wait-for-service-stability: true
