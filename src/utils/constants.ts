@@ -28,3 +28,14 @@ export const landingPageData: ILandingPageData = {
 };
 
 export const initialRegisterObject: IRegisterResponse = { userid: '' };
+
+export const geoJsonOptions = [
+    { value: 'text', text: 'Text' },
+    { value: 'vegetation', text: 'Trees' },
+    { value: 'imprint', text: 'Buildings' },
+];
+
+export const region = [
+    { value: 'Luton', text: 'Luton' },
+    { value: 'york', text: 'york' },
+];

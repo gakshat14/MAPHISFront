@@ -12,6 +12,7 @@
         "postinstall": "echo 'Running post install hook' && git config core.hooksPath ./hooks/"
     },
     "dependencies": {
+        "@dafcoe/vue-notification": "^0.1.6",
         "express": "^4.17.3",
         "leaflet": "^1.8.0",
         "leaflet-rastercoords": "^1.0.4",

@@ -1,20 +1,22 @@
 import { ACCESS_TOKEN } from '@/utils/constants';
-import type { IAuthRequest, IToken } from '@/utils/model';
+import type { IAuthRequest, IToken, IUser } from '@/utils/model';
 import { post } from '@/utils/networkUtils';
 import { decodeJWTToken, deleteFromStorage, retrieveFromStorage, storeInSessionStorage } from '@/utils/securityUtils';
 import { defineStore } from 'pinia';
 
 interface IState {
-    firstName: string;
-    lastName: string;
-    userId: string;
+    user: IUser;
     accessToken: string;
 }
 
+const initialUser: IUser = {
+    details: { firstName: '', lastName: '' },
+    email: '',
+    user_id: '',
+};
+
 const initialState: IState = {
-    firstName: '',
-    lastName: '',
-    userId: '',
+    user: initialUser,
     accessToken: '',
 };
 
@@ -22,7 +24,7 @@ export const useUserStore = defineStore({
     id: 'user',
     state: (): IState => ({ ...initialState }),
     getters: {
-        getFullName: (state) => `${state.firstName} ${state.lastName}`,
+        getFullName: (state) => `${state.user.details.firstName} ${state.user.details.lastName}`,
     },
     actions: {
         async authenticateUser(email: string, password: string) {
@@ -31,11 +33,13 @@ export const useUserStore = defineStore({
                     email: email,
                     password: password,
                 });
-                const decodedToken = decodeJWTToken(response.access_token);
-                this.accessToken = `${response.token_type} ${response.access_token}`;
-                this.$state = { ...this.$state, ...decodedToken };
-                storeInSessionStorage<IToken>(ACCESS_TOKEN, response);
-                return { userId: email };
+                const decodedToken = decodeJWTToken(response.body.access_token);
+                this.$patch({
+                    user: decodedToken,
+                    accessToken: `${response.body.token_type} ${response.body.access_token}`,
+                });
+                storeInSessionStorage<IToken>(ACCESS_TOKEN, response.body);
+                return { userId: decodedToken.user_id };
             } catch (error: any) {
                 throw new Error(error.message);
             }
@@ -48,7 +52,10 @@ export const useUserStore = defineStore({
                 // if we have token then check if the token is valid by examing the expiry date
                 // fow now expiry date is 3 weeks
                 // because we are not doing anything sensitive here
-                this.$state = { ...this.$state, ...decodedToken };
+                this.$patch({
+                    user: decodedToken,
+                    accessToken: `${response.token_type} ${response.access_token}`,
+                });
                 return true;
             } catch (error) {
                 console.error(error);

@@ -3,13 +3,14 @@ import { onMounted } from 'vue';
 import { RouterView } from 'vue-router';
 import router from './router';
 import { useUserStore } from './stores/user';
+import '@dafcoe/vue-notification/dist/vue-notification.css';
 const user = useUserStore();
 
 onMounted(() => {
     if (!user.isUserAuthenticated()) {
         router.push({ name: 'home' });
     } else {
-        router.push({ name: 'dashboard', params: { userId: user.userId } });
+        router.push({ name: 'dashboard', query: { userId: user.user.user_id } });
     }
 });
 </script>
@@ -23,6 +24,7 @@ onMounted(() => {
     box-sizing: border-box;
 }
 :root {
+    --nav-colour: #1b8264;
     --primary-button-color: #ad5c5b;
     --secondary-button-color: #fc8e61;
 }

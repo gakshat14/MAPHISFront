@@ -5,6 +5,7 @@ import { validateEmail, validatePassword } from '@/utils/validationUtils';
 import { reactive } from 'vue';
 import { RouterLink } from 'vue-router';
 import AuthCard from '../components/AuthCard.vue';
+import LoadingButton from '../components/LoadingButton.vue';
 
 interface IState {
     email: string;
@@ -29,25 +30,30 @@ enum componentIDs {
 
 const user = useUserStore();
 
-function validationService(e: Event) {
+function onChange(e: Event) {
+    let newValue = (e.target as HTMLInputElement).value;
     switch ((e.target as HTMLInputElement).id) {
         case componentIDs.email:
-            state.isEmailValid = validateEmail(state.email);
+            state.isEmailValid = validateEmail(newValue);
+            state.email = newValue;
             break;
         case componentIDs.password:
-            state.isPasswordValid = validatePassword(state.password);
-            break;
-        default:
+            state.isPasswordValid = validatePassword(newValue);
+            state.password = newValue;
             break;
     }
 }
 
-async function onLoginClicked(e: MouseEvent | Event) {
+async function onLoginClicked(e: Event) {
     try {
+        e.preventDefault();
+        state.isLoggingIn = true;
         const response = await user.authenticateUser(state.email, state.password);
-        router.push({ name: 'dashboard', params: { userId: response.userId } });
+        router.push({ name: 'dashboard', query: { userId: response.userId } });
     } catch (error) {
         console.error(error);
+    } finally {
+        state.isLoggingIn = false;
     }
 }
 </script>
@@ -55,9 +61,9 @@ async function onLoginClicked(e: MouseEvent | Event) {
 <template>
     <AuthCard name="login" heading="Login">
         <template #default>
-            <form @submit.prevent="">
+            <form @submit="onLoginClicked">
                 <input
-                    @blur="validationService"
+                    @input="onChange"
                     v-model="state.email"
                     type="email"
                     name="email"
@@ -66,8 +72,7 @@ async function onLoginClicked(e: MouseEvent | Event) {
                     :class="!state.isEmailValid && 'invalid'"
                 />
                 <input
-                    @blur="validationService"
-                    v-model="state.password"
+                    @input="onChange"
                     type="password"
                     name="password"
                     :id="componentIDs.password"
@@ -75,14 +80,13 @@ async function onLoginClicked(e: MouseEvent | Event) {
                     :class="!state.isPasswordValid && 'invalid'"
                 />
                 <RouterLink to="/forgot">Forgot Password</RouterLink>
-                <button
-                    :disabled="!state.isEmailValid || !state.isPasswordValid"
-                    type="submit"
+                <LoadingButton
                     class="pure-button button-primary"
-                    @click="onLoginClicked"
-                >
-                    Login
-                </button>
+                    text="Login"
+                    :onClick="onLoginClicked"
+                    :is-loading="state.isLoggingIn"
+                    :is-disabled="!state.isEmailValid || !state.isPasswordValid"
+                />
             </form>
         </template>
         <template #footer>
@@ -136,5 +140,6 @@ footer hr {
 }
 .button-primary {
     background-color: var(--primary-button-color);
+    color: #fff;
 }
 </style>
