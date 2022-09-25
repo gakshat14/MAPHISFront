@@ -5,5 +5,5 @@ export function validateEmail(email: string) {
 
 export function validatePassword(password: string) {
     const passwordRegex = new RegExp(/^(?=.*[a-zA-Z])(?=.*[0-9]).+$/);
-    return passwordRegex.test(password) && password.length > 0 && password.length < 38;
+    return passwordRegex.test(password) && password.length > 8;
 }

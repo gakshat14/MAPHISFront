@@ -3,7 +3,7 @@ import { initialRegisterObject } from '@/utils/constants';
 import type { INetworkData, IRegisterRequestBody, IRegisterResponse } from '@/utils/model';
 import { createNetworkObject, post } from '@/utils/networkUtils';
 import { validateEmail, validatePassword } from '@/utils/validationUtils';
-import { computed, reactive } from 'vue';
+import { reactive } from 'vue';
 import AuthCard from '../components/AuthCard.vue';
 import { countries } from '../utils/countryList';
 
@@ -56,7 +56,6 @@ const state: IState = reactive(initialState);
 
 function onCountryClicked(country: string) {
     state.countryInput = country;
-    console.log(country);
     state.showResults = false;
     state.filteredCountries = [];
 }
@@ -67,27 +66,28 @@ function onCountryChanged(e: Event) {
 }
 
 function validationService(e: Event) {
+    const newValue = (e.target as HTMLInputElement).value;
     switch ((e.target as HTMLInputElement).id) {
         case componentIDs.firstName:
-            state.firstName.isValid = state.firstName.input.length !== 0;
+            state.firstName.input = newValue;
+            state.firstName.isValid = newValue.length !== 0;
             break;
         case componentIDs.lastName:
-            state.lastName.isValid = state.lastName.input.length !== 0;
+            state.lastName.input = newValue;
+            state.lastName.isValid = newValue.length !== 0;
             break;
         case componentIDs.email:
-            state.email.isValid = validateEmail(state.email.input);
+            state.email.input = newValue;
+            state.email.isValid = validateEmail(newValue);
             break;
         case componentIDs.password:
-            state.password.isValid = validatePassword(state.password.input);
+            state.password.input = newValue;
+            state.password.isValid = validatePassword(newValue);
             break;
         default:
             break;
     }
 }
-
-const disableRegister = computed(
-    () => state.firstName.isValid && state.lastName.isValid && state.email.isValid && state.password.isValid,
-);
 
 async function makeRegisterCall() {
     try {
@@ -142,27 +142,25 @@ function showAndDisplayresults(show = true) {
                         <div class="pure-u-1">
                             <label :for="componentIDs.firstName">First name *</label>
                             <input
-                                v-model="state.firstName.input"
+                                @input="validationService"
                                 class="pure-input-1"
                                 type="text"
                                 :id="componentIDs.firstName"
                                 :name="componentIDs.firstName"
                                 :class="!state.firstName.isValid && 'invalid'"
-                                @blur="validationService"
                                 required
                             />
                         </div>
                         <div class="pure-u-1">
                             <label :for="componentIDs.lastName">Last name *</label>
                             <input
-                                v-model="state.lastName.input"
+                                @input="validationService"
                                 class="pure-input-1"
                                 type="text"
                                 :id="componentIDs.lastName"
                                 :name="componentIDs.lastName"
                                 :class="!state.lastName.isValid && 'invalid'"
                                 required
-                                @blur="validationService"
                             />
                         </div>
                         <div class="pure-u-1">
@@ -205,35 +203,48 @@ function showAndDisplayresults(show = true) {
                         <div class="pure-u-1">
                             <label :for="componentIDs.email">Email *</label>
                             <input
-                                v-model="state.email.input"
                                 class="pure-input-1"
                                 type="email"
                                 :id="componentIDs.email"
                                 :name="componentIDs.email"
                                 :class="!state.email.isValid && 'invalid'"
                                 required
-                                @blur="validationService"
+                                @input="validationService"
                             />
                         </div>
                         <div class="pure-u-1">
                             <label :for="componentIDs.password">Password *</label>
                             <input
-                                v-model="state.password.input"
                                 class="pure-input-1"
                                 type="password"
                                 :id="componentIDs.password"
                                 :class="!state.password.isValid && 'invalid'"
                                 required
-                                @blur="validationService"
+                                placeholder="Enter a password containing more than 9 alphanumeric characters"
+                                @input="validationService"
                             />
                         </div>
                     </div>
                 </fieldset>
                 <button
-                    :disabled="!disableRegister"
+                    :disabled="
+                        !(
+                            state.firstName.isValid &&
+                            state.lastName.isValid &&
+                            state.email.isValid &&
+                            state.password.isValid
+                        )
+                    "
                     type="submit"
                     class="pure-button button-primary"
-                    :class="!disableRegister && 'pure-button-disabled'"
+                    :class="
+                        !(
+                            state.firstName.isValid &&
+                            state.lastName.isValid &&
+                            state.email.isValid &&
+                            state.password.isValid
+                        ) && 'pure-button-disabled'
+                    "
                     @click="makeRegisterCall"
                     v-if="!state.registrationData.isFetching"
                 >
