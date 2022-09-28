@@ -26,10 +26,11 @@ import {
     GeoJSON,
     Polyline,
 } from 'leaflet';
-import { uri_without_version } from '@/utils/networkUtils';
+import { get, uri, uri_without_version } from '@/utils/networkUtils';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-ignore
 import '../../node_modules/leaflet-rastercoords/rastercoords.js';
+import type { IFeatureResponse } from '@/models/classification';
 
 const props = defineProps<IProps>();
 
@@ -66,16 +67,21 @@ function initLeafLet(region: string) {
         maxNativeZoom: rc.zoomLevel(),
     };
 
-    tileLayer(`http://54.89.211.203/static/tiles/${region}/{z}/{x}/{y}.jpg`, options).addTo(leafMap);
+    tileLayer(`${uri_without_version}static/tiles/${region}/{z}/{x}/{y}.jpg`, options).addTo(leafMap);
 }
 
 async function initGeoJson(region: string, featureToFetch: string) {
     try {
-        const tileData = await import(
-            /* @vite-ignore */ `http://54.89.211.203/static/shapes/${region}/${featureToFetch}.js`
-        );
+        const tileData = await get<IFeatureResponse>(`${uri}features/${region}/${featureToFetch}`);
 
-        textLayer = geoJSON(tileData[`tile_data_${featureToFetch}`].features, {
+        if (tileData.status >= 400) {
+            console.error('Failed to load features');
+            return;
+        }
+
+        // adding any because we don't have our data in the same
+        // structure as GeoJsonObject
+        textLayer = geoJSON(tileData.body.features as any, {
             coordsToLatLng: function (coords) {
                 return rc.unproject(coords as PointExpression);
             },
