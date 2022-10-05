@@ -6,6 +6,8 @@ import { validateEmail, validatePassword } from '@/utils/validationUtils';
 import { reactive } from 'vue';
 import AuthCard from '../components/AuthCard.vue';
 import { countries } from '../utils/countryList';
+import { useNotificationStore } from '@dafcoe/vue-notification';
+import { returnNotificationObject } from '@/utils/commonUtils';
 
 interface IInputState {
     input: string;
@@ -53,6 +55,8 @@ const initialState: IState = {
 };
 
 const state: IState = reactive(initialState);
+
+const { setNotification } = useNotificationStore();
 
 function onCountryClicked(country: string) {
     state.countryInput = country;
@@ -107,9 +111,9 @@ async function makeRegisterCall() {
         state.occupation && (body.details.occupation = state.occupation);
         const response = await post<IRegisterResponse, IRegisterRequestBody>('user/add', body);
         state.registrationData = createNetworkObject(response.body, false);
-    } catch (error) {
-        console.error(error);
+    } catch (error: any) {
         state.registrationData = createNetworkObject(initialRegisterObject, false, true);
+        setNotification(returnNotificationObject(error.message, 'alert'));
     }
 }
 
