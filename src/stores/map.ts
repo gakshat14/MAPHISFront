@@ -10,6 +10,8 @@ import { post } from '@/utils/networkUtils';
 import { defineStore } from 'pinia';
 import { classKeys } from '../geojson/sample_data';
 import { useUserStore } from './user';
+import { useNotificationStore } from '@dafcoe/vue-notification';
+import { returnNotificationObject } from '@/utils/commonUtils';
 
 interface IState {
     isClassifying: boolean;
@@ -36,6 +38,7 @@ const initialState: IState = {
 };
 
 const { user } = useUserStore();
+const { setNotification } = useNotificationStore();
 
 export const useMapStore = defineStore({
     id: 'map',
@@ -56,7 +59,8 @@ export const useMapStore = defineStore({
                     classifiedIndex: response.body.classified,
                     total_features: response.body.total_features,
                 });
-            } catch (error) {
+            } catch (error: any) {
+                setNotification(returnNotificationObject(error.message, 'alert'));
                 console.error(error);
             }
         },
@@ -85,7 +89,8 @@ export const useMapStore = defineStore({
                 newObject.currentKey = response.body.feature.properties.class;
                 newObject.classifiedIndex = response.body.classified;
                 this.$patch(newObject);
-            } catch (error) {
+            } catch (error: any) {
+                setNotification(returnNotificationObject(error.message, 'alert'));
                 console.error(error);
             }
         },
@@ -107,7 +112,8 @@ export const useMapStore = defineStore({
                     classifiedIndex: response.body.classified,
                 };
                 this.$patch(newObject);
-            } catch (error) {
+            } catch (error: any) {
+                setNotification(returnNotificationObject(error.message, 'alert'));
                 console.error(error);
             }
         },

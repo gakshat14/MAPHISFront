@@ -3,6 +3,8 @@ import type { IAuthRequest, IToken, IUser } from '@/utils/model';
 import { post } from '@/utils/networkUtils';
 import { decodeJWTToken, deleteFromStorage, retrieveFromStorage, storeInSessionStorage } from '@/utils/securityUtils';
 import { defineStore } from 'pinia';
+import { useNotificationStore } from '@dafcoe/vue-notification';
+import { returnNotificationObject } from '@/utils/commonUtils';
 
 interface IState {
     user: IUser;
@@ -19,6 +21,8 @@ const initialState: IState = {
     user: initialUser,
     accessToken: '',
 };
+
+const { setNotification } = useNotificationStore();
 
 export const useUserStore = defineStore({
     id: 'user',
@@ -41,6 +45,7 @@ export const useUserStore = defineStore({
                 storeInSessionStorage<IToken>(ACCESS_TOKEN, response.body);
                 return { userId: decodedToken.user_id };
             } catch (error: any) {
+                setNotification(returnNotificationObject(error.message, 'alert'));
                 throw new Error(error.message);
             }
         },
@@ -57,8 +62,8 @@ export const useUserStore = defineStore({
                     accessToken: `${response.token_type} ${response.access_token}`,
                 });
                 return true;
-            } catch (error) {
-                console.error(error);
+            } catch (error: any) {
+                setNotification(returnNotificationObject(error.message, 'alert'));
                 return false;
             }
         },

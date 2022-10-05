@@ -6,6 +6,8 @@ import { reactive } from 'vue';
 import { RouterLink } from 'vue-router';
 import AuthCard from '../components/AuthCard.vue';
 import LoadingButton from '../components/LoadingButton.vue';
+import { useNotificationStore } from '@dafcoe/vue-notification';
+import { returnNotificationObject } from '@/utils/commonUtils';
 
 interface IState {
     email: string;
@@ -30,6 +32,8 @@ enum componentIDs {
 
 const user = useUserStore();
 
+const { setNotification } = useNotificationStore();
+
 function onChange(e: Event) {
     let newValue = (e.target as HTMLInputElement).value;
     switch ((e.target as HTMLInputElement).id) {
@@ -50,8 +54,8 @@ async function onLoginClicked(e: Event) {
         state.isLoggingIn = true;
         const response = await user.authenticateUser(state.email, state.password);
         router.push({ name: 'dashboard', query: { userId: response.userId } });
-    } catch (error) {
-        console.error(error);
+    } catch (error: any) {
+        setNotification(returnNotificationObject(error.message, 'alert'));
     } finally {
         state.isLoggingIn = false;
     }

@@ -30,12 +30,16 @@ import { uri_without_version } from '@/utils/networkUtils';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-ignore
 import '../../node_modules/leaflet-rastercoords/rastercoords.js';
+import { useNotificationStore } from '@dafcoe/vue-notification';
+import { returnNotificationObject } from '@/utils/commonUtils';
 
 const props = defineProps<IProps>();
 
 let leafMap: Map;
 let textLayer: GeoJSON<any>;
 let rc: any;
+
+const { setNotification } = useNotificationStore();
 
 function returnColorObject(colorFor: 'default' | 'classifying' | 'classified' | 'skipped' = 'default') {
     if (colorFor === 'classifying') {
@@ -83,7 +87,7 @@ async function initGeoJson(region: string, featureToFetch: string) {
 
         leafMap.addLayer(textLayer);
     } catch (error) {
-        console.error(error);
+        setNotification(returnNotificationObject('Unable to initialise GeoJSON', 'alert'));
     }
 }
 
