@@ -23,6 +23,9 @@ export async function post<T, R>(endpoint: string, data: R): Promise<ICommonResp
             body: JSON.stringify(data),
         });
         const parsedResponse: T = await response.json();
+        if (response.status >= 400) {
+            return Promise.reject(parsedResponse);
+        }
         return Promise.resolve({ status: response.status, body: parsedResponse });
     } catch (error) {
         return Promise.reject(error);

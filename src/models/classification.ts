@@ -39,4 +39,9 @@ export interface ISpecificFeatureResponse extends IStartResponse {
     content?: { value: string };
 }
 
+export interface IFeatureResponse {
+    type: string;
+    features: IFeature[];
+}
+
 export type INextResponse = IStartResponse;

@@ -30,20 +30,20 @@ const {
 const { startClassification, nextClassification, endClassification, previousClassification } = useMapStore();
 
 function onClassificationClicked() {
-    startClassification('york');
+    startClassification(state.regionSelectValue);
 }
 
 function onNextClicked() {
     if (!state.classificationInput) {
-        nextClassification(currentClassificationIndex.value, 'york');
+        nextClassification(currentClassificationIndex.value, state.regionSelectValue);
     } else {
-        nextClassification(currentClassificationIndex.value, 'york', state.classificationInput);
+        nextClassification(currentClassificationIndex.value, state.regionSelectValue, state.classificationInput);
     }
     state.classificationInput = '';
 }
 
 function onPreviousClicked() {
-    previousClassification(currentClassificationIndex.value, 'york');
+    previousClassification(currentClassificationIndex.value, state.regionSelectValue);
 }
 
 function onEndClassificationClicked() {
