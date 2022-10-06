@@ -29,7 +29,7 @@ export function returnNotificationObject(message: string, type: Alert): IToastNo
             manually: true,
             automatically: true,
         },
-        duration: 5000,
+        duration: 6000,
         showDurationProgress: true,
         appearance: 'light',
     };

@@ -26,12 +26,13 @@ import {
     GeoJSON,
     Polyline,
 } from 'leaflet';
-import { uri_without_version } from '@/utils/networkUtils';
+import { get, uri, uri_without_version } from '@/utils/networkUtils';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-ignore
 import '../../node_modules/leaflet-rastercoords/rastercoords.js';
 import { useNotificationStore } from '@dafcoe/vue-notification';
 import { returnNotificationObject } from '@/utils/commonUtils';
+import type { IFeatureResponse } from '@/models/classification';
 
 const props = defineProps<IProps>();
 
@@ -70,21 +71,23 @@ function initLeafLet(region: string) {
         maxNativeZoom: rc.zoomLevel(),
     };
 
-    tileLayer(`http://54.89.211.203/static/tiles/${region}/{z}/{x}/{y}.jpg`, options).addTo(leafMap);
+    tileLayer(`${uri_without_version}/static/tiles/${region}/{z}/{x}/{y}.jpg`, options).addTo(leafMap);
 }
 
 async function initGeoJson(region: string, featureToFetch: string) {
     try {
-        const tileData = await import(
-            /* @vite-ignore */ `http://54.89.211.203/static/shapes/${region}/${featureToFetch}.js`
-        );
-
-        textLayer = geoJSON(tileData[`tile_data_${featureToFetch}`].features, {
+        const tileData = await get<IFeatureResponse>(`${uri}features/${region}/${featureToFetch}`);
+        if (tileData.status >= 400) {
+            setNotification(returnNotificationObject('Failed to load GeoJSON', 'alert'));
+            return;
+        }
+        // adding any because we don't have our data in the same
+        // structure as GeoJsonObject
+        textLayer = geoJSON(tileData.body.features as any, {
             coordsToLatLng: function (coords) {
                 return rc.unproject(coords as PointExpression);
             },
         });
-
         leafMap.addLayer(textLayer);
     } catch (error) {
         setNotification(returnNotificationObject('Unable to initialise GeoJSON', 'alert'));
@@ -96,6 +99,9 @@ onMounted(() => {
     initGeoJson(props.region, props.feature);
 });
 
+// this method can be optimised.
+// right now we are using keys but we can leverage the index returned
+// by the backend. Allowing us to directly access the specified layer
 function changeMyColorPlease(currentlyFocussedKey: string) {
     let count = -1;
     textLayer.eachLayer((layer) => {
@@ -175,5 +181,6 @@ watch(
 #leaflet-container {
     height: 100%;
     width: 100%;
+    z-index: 0;
 }
 </style>

@@ -5,6 +5,7 @@ import router from './router';
 import { useUserStore } from './stores/user';
 import '@dafcoe/vue-notification/dist/vue-notification.css';
 import ToastContainer from './components/ToastContainer.vue';
+
 const user = useUserStore();
 
 onMounted(() => {

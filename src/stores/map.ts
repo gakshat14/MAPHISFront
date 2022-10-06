@@ -6,7 +6,7 @@ import type {
     IStartRequest,
     IStartResponse,
 } from '@/models/classification';
-import { post } from '@/utils/networkUtils';
+import { get, post, uri } from '@/utils/networkUtils';
 import { defineStore } from 'pinia';
 import { classKeys } from '../geojson/sample_data';
 import { useUserStore } from './user';
@@ -23,6 +23,7 @@ interface IState {
     isFetching: boolean;
     classifiedIndex: number[];
     total_features: number;
+    regions: string[];
 }
 
 const initialState: IState = {
@@ -35,6 +36,7 @@ const initialState: IState = {
     isFetching: false,
     classifiedIndex: [],
     total_features: NaN,
+    regions: [],
 };
 
 const { user } = useUserStore();
@@ -119,6 +121,19 @@ export const useMapStore = defineStore({
         },
         endClassification() {
             this.isClassifying = false;
+        },
+        async getAllRegions() {
+            try {
+                const response = await get<string[]>(`${uri}metadata/maps`);
+                this.$patch({ regions: response.body });
+            } catch (error: any) {
+                setNotification(returnNotificationObject(error.message, 'alert'));
+            }
+        },
+    },
+    getters: {
+        returnRegionOptions(state: IState) {
+            return state.regions.map((value: string) => ({ text: value, value: value }));
         },
     },
 });

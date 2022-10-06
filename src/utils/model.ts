@@ -57,3 +57,8 @@ export interface ILandingPageData {
     researchers: IResearcherProps[];
     participatingInstitute: IUniProps[];
 }
+
+export interface IOption {
+    text: string;
+    value: string;
+}
