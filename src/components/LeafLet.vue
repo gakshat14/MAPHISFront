@@ -71,7 +71,7 @@ function initLeafLet(region: string) {
         maxNativeZoom: rc.zoomLevel(),
     };
 
-    tileLayer(`${uri_without_version}/static/tiles/${region}/{z}/{x}/{y}.jpg`, options).addTo(leafMap);
+    tileLayer(`${uri_without_version}static/tiles/${region}/{z}/{x}/{y}.jpg`, options).addTo(leafMap);
 }
 
 async function initGeoJson(region: string, featureToFetch: string) {
