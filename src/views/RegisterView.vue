@@ -224,9 +224,9 @@ function showAndDisplayresults(show = true) {
                                 :id="componentIDs.password"
                                 :class="!state.password.isValid && 'invalid'"
                                 required
-                                placeholder="Enter a password containing more than 9 alphanumeric characters"
                                 @input="validationService"
                             />
+                            <p class="password-help">Enter a password containing more than 9 alphanumeric characters</p>
                         </div>
                     </div>
                 </fieldset>
@@ -290,5 +290,9 @@ li.countries {
 .button-primary {
     background-color: var(--primary-button-color);
     color: #fff;
+}
+.password-help {
+    margin: 0;
+    font-size: 11px;
 }
 </style>

@@ -23,6 +23,7 @@ import {
     Map,
     GeoJSON,
     Polyline,
+    type PathOptions,
 } from 'leaflet';
 import { get, uri, uri_without_version } from '@/utils/networkUtils';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -31,7 +32,7 @@ import '../../node_modules/leaflet-rastercoords/rastercoords.js';
 import { useNotificationStore } from '@dafcoe/vue-notification';
 import { returnNotificationObject } from '@/utils/commonUtils';
 import type { IFeatureResponse } from '@/models/classification';
-import { geoJsonOptions } from '@/utils/constants';
+import { fillColor, geoJsonOptions } from '@/utils/constants';
 
 const props = defineProps<IProps>();
 
@@ -76,12 +77,32 @@ function initLeafLet(region: string) {
 async function initGeoJson(region: string, featureToFetch: string) {
     try {
         const tileData = await get<IFeatureResponse>(`${uri}features/${region}/${featureToFetch}`);
+        let tileStyle: PathOptions = { weight: 1, stroke: false };
+        switch (featureToFetch) {
+            case 'vegetation':
+                tileStyle = {
+                    ...tileStyle,
+                    color: fillColor.vegetation,
+                    fillColor: fillColor.vegetation,
+                    fillOpacity: 0.6,
+                };
+                break;
+            case 'imprint':
+                tileStyle = { ...tileStyle, color: fillColor.imprint, fillColor: fillColor.imprint };
+                break;
+            case 'text':
+                tileStyle = { ...tileStyle, color: fillColor.text, fillColor: fillColor.text, fillOpacity: 0.5 };
+                break;
+            default:
+                tileStyle = { ...tileStyle, color: '#3388FF', fillColor: '#3388FF' };
+        }
         // adding any because we don't have our data in the same
         // structure as GeoJsonObject
         textLayer = geoJSON(tileData.body.features as any, {
             coordsToLatLng: function (coords) {
                 return rc.unproject(coords as PointExpression);
             },
+            style: tileStyle,
         });
         leafMap.addLayer(textLayer);
     } catch (error) {
@@ -91,17 +112,21 @@ async function initGeoJson(region: string, featureToFetch: string) {
 
 async function initAllGeoJson(region: string) {
     for (let option of geoJsonOptions) {
-        console.log(option);
+        initGeoJson(region, option.value);
+    }
+}
+
+function handleGeojson(region: string, feature: string) {
+    if (props.feature === 'all') {
+        initAllGeoJson(region);
+    } else {
+        initGeoJson(region, feature);
     }
 }
 
 onMounted(() => {
     initLeafLet(props.region);
-    if (props.feature === 'all') {
-        initAllGeoJson(props.region);
-    } else {
-        initGeoJson(props.region, props.feature);
-    }
+    handleGeojson(props.region, props.feature);
 });
 
 function initialiseTextLayerColors(currentlyFocussedIndex: number) {
@@ -179,7 +204,7 @@ watch(
             leafMap.off();
             leafMap.remove();
             initLeafLet(newRegion);
-            initGeoJson(newRegion, props.feature);
+            handleGeojson(newRegion, props.feature);
         }
     },
 );

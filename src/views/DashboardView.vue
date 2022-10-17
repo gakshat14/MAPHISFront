@@ -4,7 +4,6 @@ import LeafLet from '../components/LeafLet.vue';
 import { useMapStore } from '@/stores/map';
 import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/stores/user';
-import { geoJsonOptions, region } from '../utils/constants';
 import { reactive } from 'vue';
 import DropDown from '../components/Drop-down.vue';
 import type { INetworkData, IOption } from '@/utils/model';
@@ -12,6 +11,10 @@ import { createNetworkObject, get, uri } from '@/utils/networkUtils';
 import { useNotificationStore } from '@dafcoe/vue-notification';
 import { returnNotificationObject } from '@/utils/commonUtils';
 import map from 'lodash/map';
+
+export interface IProps {
+    isDemo?: boolean;
+}
 
 export interface IState {
     geojsonSelectValue: string;
@@ -43,6 +46,8 @@ const {
     classifiedIndices,
     featureInputValue,
 } = storeToRefs(useMapStore());
+
+const props = defineProps<IProps>();
 
 const { startClassification, nextClassification, endClassification, previousClassification } = useMapStore();
 const { setNotification } = useNotificationStore();
@@ -103,7 +108,7 @@ function onFormSubmit(e: Event) {
         <div class="dashboard-menu">
             <header>
                 <h1>Maphis</h1>
-                <ul>
+                <ul v-if="!props.isDemo">
                     <li>Hi {{ getFullName }}</li>
                     <li><LogoutButton /></li>
                 </ul>
@@ -120,6 +125,7 @@ function onFormSubmit(e: Event) {
                         @on-select-change="updateRegionValue"
                     />
                     <DropDown
+                        v-if="!props.isDemo"
                         :value="state.geojsonSelectValue"
                         :is-disabled="state.featuresData.isFetching && state.featureOptions.length < 1"
                         name="Features"
@@ -128,7 +134,12 @@ function onFormSubmit(e: Event) {
                         id="feature_selector"
                         @on-select-change="updateFeatureValue"
                     />
-                    <button type="submit" class="pure-button button-primary" @submit="onClassificationClicked">
+                    <button
+                        v-if="!props.isDemo"
+                        type="submit"
+                        class="pure-button button-primary"
+                        @submit="onClassificationClicked"
+                    >
                         Start classification
                     </button>
                 </form>
@@ -179,7 +190,7 @@ function onFormSubmit(e: Event) {
                 :region="state.regionSelectValue"
                 :is-classifying="isClassifying"
                 :current-classification-index="currentClassificationIndex"
-                :feature="state.geojsonSelectValue"
+                :feature="props.isDemo ? 'all' : state.geojsonSelectValue"
                 :img-size="state.regionSelectValue === 'york' ? [4096, 4096] : [34200, 37950]"
             />
         </div>
