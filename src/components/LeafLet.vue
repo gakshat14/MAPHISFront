@@ -2,10 +2,8 @@
 export interface IProps {
     region: string;
     isClassifying: boolean;
-    focusedKey: string;
-    skippedKeys: string[];
-    classifiedKeys: string[];
-    classifiedIndex: number[];
+    skippedIndices: number[];
+    classifiedIndices: number[];
     currentClassificationIndex: number;
     imgSize: number[];
     feature: string;
@@ -33,6 +31,7 @@ import '../../node_modules/leaflet-rastercoords/rastercoords.js';
 import { useNotificationStore } from '@dafcoe/vue-notification';
 import { returnNotificationObject } from '@/utils/commonUtils';
 import type { IFeatureResponse } from '@/models/classification';
+import { geoJsonOptions } from '@/utils/constants';
 
 const props = defineProps<IProps>();
 
@@ -77,10 +76,6 @@ function initLeafLet(region: string) {
 async function initGeoJson(region: string, featureToFetch: string) {
     try {
         const tileData = await get<IFeatureResponse>(`${uri}features/${region}/${featureToFetch}`);
-        if (tileData.status >= 400) {
-            setNotification(returnNotificationObject('Failed to load GeoJSON', 'alert'));
-            return;
-        }
         // adding any because we don't have our data in the same
         // structure as GeoJsonObject
         textLayer = geoJSON(tileData.body.features as any, {
@@ -94,34 +89,59 @@ async function initGeoJson(region: string, featureToFetch: string) {
     }
 }
 
+async function initAllGeoJson(region: string) {
+    for (let option of geoJsonOptions) {
+        console.log(option);
+    }
+}
+
 onMounted(() => {
     initLeafLet(props.region);
-    initGeoJson(props.region, props.feature);
+    if (props.feature === 'all') {
+        initAllGeoJson(props.region);
+    } else {
+        initGeoJson(props.region, props.feature);
+    }
 });
 
-// this method can be optimised.
-// right now we are using keys but we can leverage the index returned
-// by the backend. Allowing us to directly access the specified layer
-function changeMyColorPlease(currentlyFocussedKey: string) {
+function initialiseTextLayerColors(currentlyFocussedIndex: number) {
     let count = -1;
     textLayer.eachLayer((layer) => {
         ++count;
         const layerPoly = layer as Polyline;
         const currentClass = layerPoly?.feature?.properties.class;
-        if (currentClass === currentlyFocussedKey) {
+        if (count === currentlyFocussedIndex) {
             layerPoly.setStyle({ ...returnColorObject('classifying') });
-            layerPoly.bindPopup(currentlyFocussedKey).openPopup();
+            layerPoly.bindPopup(currentClass).openPopup();
         }
-        if (props.skippedKeys.includes(currentClass) || count < props.currentClassificationIndex) {
+        if (props.skippedIndices.includes(count) || count < props.currentClassificationIndex) {
             layerPoly.setStyle({ ...returnColorObject('skipped') });
         }
         // if (props.classifiedKeys.includes(currentClass)) {
         //     layerPoly.setStyle({ ...returnColorObject('classified') });
         // }
-        if (props.classifiedIndex.includes(count)) {
+        if (props.classifiedIndices.includes(count)) {
             layerPoly.setStyle({ ...returnColorObject('classified') });
         }
     });
+}
+
+function changeMyColorPlease(currentlyFocussedIndex: number) {
+    let previousIndex = currentlyFocussedIndex - 1;
+
+    const currentLayer = textLayer.getLayers()[currentlyFocussedIndex] as Polyline;
+    const previousLayer = textLayer.getLayers()[previousIndex] as Polyline;
+
+    const currentClass = currentLayer?.feature?.properties.class;
+
+    currentLayer.setStyle({ ...returnColorObject('classifying') });
+    currentLayer.bindPopup(currentClass).openPopup();
+
+    if (previousIndex >= 0 && props.skippedIndices.includes(previousIndex)) {
+        previousLayer.setStyle({ ...returnColorObject('skipped') });
+    } else if (props.classifiedIndices.includes(previousIndex)) {
+        previousLayer.setStyle({ ...returnColorObject('classified') });
+    }
 }
 
 watch(
@@ -131,7 +151,7 @@ watch(
             textLayer.setStyle(returnColorObject('default'));
             return;
         }
-        if (props.classifiedIndex.length === 0) {
+        if (props.classifiedIndices.length === 0) {
             let colorStyle = returnColorObject('classifying');
             textLayer.setStyle(colorStyle);
             return;
@@ -139,14 +159,14 @@ watch(
 
         let colorStyle = returnColorObject('classifying');
         textLayer.setStyle(colorStyle);
-        changeMyColorPlease(props.focusedKey);
+        initialiseTextLayerColors(props.currentClassificationIndex);
     },
 );
 
 watch(
-    () => props.focusedKey,
+    () => props.currentClassificationIndex,
     (newValue) => {
-        if (!newValue) return;
+        if (!newValue && !props.isClassifying) return;
         changeMyColorPlease(newValue);
     },
 );
@@ -175,6 +195,7 @@ watch(
 
 <template>
     <div id="leaflet-container"></div>
+    <div>{{ props.classifiedIndices }}</div>
 </template>
 
 <style scoped>

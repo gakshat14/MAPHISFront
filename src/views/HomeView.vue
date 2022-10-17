@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { landingPageData } from '../utils/constants';
 import ResearcherCard from '../components/ResearcherCard.vue';
+
+function getImageURL(image: string) {
+    return new URL(`../images/${image}`, import.meta.url).href;
+}
 </script>
 
 <template>
@@ -35,7 +39,7 @@ import ResearcherCard from '../components/ResearcherCard.vue';
                         :key="`university_${index}`"
                     >
                         <li v-if="index <= 3">
-                            <img :src="`/src/images/${institute.image}`" :alt="institute.name" />
+                            <img :src="getImageURL(institute.image)" :alt="institute.name" />
                         </li>
                     </template>
                 </ul>
@@ -80,7 +84,7 @@ import ResearcherCard from '../components/ResearcherCard.vue';
 <style scoped>
 header {
     z-index: 1000;
-    background-image: url(/src/images/background.png);
+    background-image: url(@/images/background.png);
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
@@ -187,7 +191,7 @@ ul {
     align-items: center;
     width: 100%;
     flex-wrap: wrap;
-    background-image: url(/src/images/Map_BG_2.png);
+    background-image: url(@/images/Map_BG_2.png);
     background-blend-mode: multiply;
     background-color: #1b8264;
     padding: 1rem 0;

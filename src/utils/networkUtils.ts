@@ -41,6 +41,9 @@ export async function get<T>(uri: string, additionalParams?: RequestInit): Promi
         additionalParams && (params = { ...params, ...additionalParams });
         const response = await fetch(uri, params);
         const parsedResponse: T = await response.json();
+        if (response.status >= 400) {
+            return Promise.reject(parsedResponse);
+        }
         return Promise.resolve({ status: response.status, body: parsedResponse });
     } catch (error) {
         return Promise.reject(error);
