@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { landingPageData } from '../utils/constants';
 import ResearcherCard from '../components/ResearcherCard.vue';
+
+function getImageURL(image: string) {
+    return new URL(`../images/${image}`, import.meta.url).href;
+}
 </script>
 
 <template>
@@ -35,7 +39,7 @@ import ResearcherCard from '../components/ResearcherCard.vue';
                         :key="`university_${index}`"
                     >
                         <li v-if="index <= 3">
-                            <img :src="`/src/images/${institute.image}`" :alt="institute.name" />
+                            <img :src="getImageURL(institute.image)" :alt="institute.name" />
                         </li>
                     </template>
                 </ul>

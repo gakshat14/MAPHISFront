@@ -11,6 +11,7 @@ export interface IProps {
     options: { value: string; text: string }[];
     id: string;
     value: string;
+    isDisabled?: boolean;
     name?: string;
 }
 
@@ -21,6 +22,7 @@ const props = defineProps<IProps>();
     <label :for="props.id">{{ props.label }}</label>
     <select
         class="pure-input-1"
+        :disabled="props.isDisabled"
         :value="props.value"
         @change="$emit('onSelectChange', $event)"
         :name="props.name"

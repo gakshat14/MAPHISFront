@@ -7,43 +7,77 @@ import { useUserStore } from '@/stores/user';
 import { geoJsonOptions, region } from '../utils/constants';
 import { reactive } from 'vue';
 import DropDown from '../components/Drop-down.vue';
+import type { INetworkData, IOption } from '@/utils/model';
+import { createNetworkObject, get, uri } from '@/utils/networkUtils';
+import { useNotificationStore } from '@dafcoe/vue-notification';
+import { returnNotificationObject } from '@/utils/commonUtils';
+import map from 'lodash/map';
 
 export interface IState {
     geojsonSelectValue: string;
     classificationInput: string;
     regionSelectValue: string;
+    regionsData: INetworkData<string[]>;
+    featuresData: INetworkData<string[]>;
+    regionOptions: IOption[];
+    featureOptions: IOption[];
 }
 
 const { getFullName } = useUserStore();
 
-const state: IState = reactive({ geojsonSelectValue: 'text', classificationInput: '', regionSelectValue: 'york' });
+const state: IState = reactive({
+    geojsonSelectValue: 'text',
+    classificationInput: '',
+    regionSelectValue: 'york',
+    regionsData: createNetworkObject([], true),
+    featuresData: createNetworkObject([], true),
+    regionOptions: [],
+    featureOptions: [],
+});
 
 const {
     isClassifying,
     total_features,
     currentClassificationIndex,
-    skippedKeys,
-    classifiedKeys,
-    classifiedIndex,
-    currentKey,
+    skippedIndices,
+    classifiedIndices,
+    featureInputValue,
 } = storeToRefs(useMapStore());
+
 const { startClassification, nextClassification, endClassification, previousClassification } = useMapStore();
+const { setNotification } = useNotificationStore();
+
+state.regionsData = createNetworkObject([], true);
+state.featuresData = createNetworkObject([], true);
+
+Promise.all([get<string[]>(`${uri}metadata/maps`), get<string[]>(`${uri}metadata/feature/classes`)])
+    .then(([regionsResponse, featureClassResponse]) => {
+        state.regionsData = createNetworkObject(regionsResponse.body, false);
+        state.featuresData = createNetworkObject(featureClassResponse.body, false);
+        state.regionOptions = map(regionsResponse.body, (value) => ({ text: value, value }));
+        state.featureOptions = map(featureClassResponse.body, (value) => ({ text: value, value }));
+    })
+    .catch((error) => {
+        setNotification(returnNotificationObject(error.message, 'alert'));
+        state.regionsData = createNetworkObject([], false, true);
+        state.featuresData = createNetworkObject([], false, true);
+    });
 
 function onClassificationClicked() {
-    startClassification('york');
+    startClassification(state.regionSelectValue);
 }
 
 function onNextClicked() {
     if (!state.classificationInput) {
-        nextClassification(currentClassificationIndex.value, 'york');
+        nextClassification(currentClassificationIndex.value, state.regionSelectValue);
     } else {
-        nextClassification(currentClassificationIndex.value, 'york', state.classificationInput);
+        nextClassification(currentClassificationIndex.value, state.regionSelectValue);
     }
     state.classificationInput = '';
 }
 
 function onPreviousClicked() {
-    previousClassification(currentClassificationIndex.value, 'york');
+    previousClassification(currentClassificationIndex.value, state.regionSelectValue);
 }
 
 function onEndClassificationClicked() {
@@ -77,17 +111,19 @@ function onFormSubmit(e: Event) {
             <main>
                 <form v-if="!isClassifying" class="pure-form pure-form-stacked" @submit="onFormSubmit">
                     <DropDown
+                        :is-disabled="state.regionsData.isFetching && state.featureOptions.length < 1"
                         :value="state.regionSelectValue"
                         name="Region"
-                        :options="region"
+                        :options="state.regionOptions"
                         label="Select a region"
                         id="region_selector"
                         @on-select-change="updateRegionValue"
                     />
                     <DropDown
                         :value="state.geojsonSelectValue"
+                        :is-disabled="state.featuresData.isFetching && state.featureOptions.length < 1"
                         name="Features"
-                        :options="geoJsonOptions"
+                        :options="state.featureOptions"
                         label="Select features to highlight"
                         id="feature_selector"
                         @on-select-change="updateFeatureValue"
@@ -103,7 +139,7 @@ function onFormSubmit(e: Event) {
                         id="classification_input"
                     >
                         <label for="text_input">Please enter the text you can see in the map</label>
-                        <input class="pure-input-1" v-model="state.classificationInput" type="text" id="text_input" />
+                        <input class="pure-input-1" v-model="featureInputValue" type="text" id="text_input" />
                     </div>
                     <div v-if="state.geojsonSelectValue === 'vegetation'">
                         <p>trees will come here</p>
@@ -138,12 +174,10 @@ function onFormSubmit(e: Event) {
         </div>
         <div class="dashboard-application">
             <LeafLet
-                :skipped-keys="skippedKeys"
+                :skipped-indices="skippedIndices"
+                :classified-indices="classifiedIndices"
                 :region="state.regionSelectValue"
                 :is-classifying="isClassifying"
-                :focused-key="currentKey"
-                :classified-keys="classifiedKeys"
-                :classified-index="classifiedIndex"
                 :current-classification-index="currentClassificationIndex"
                 :feature="state.geojsonSelectValue"
                 :img-size="state.regionSelectValue === 'york' ? [4096, 4096] : [34200, 37950]"

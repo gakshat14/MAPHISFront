@@ -6,7 +6,7 @@ import type {
     IStartRequest,
     IStartResponse,
 } from '@/models/classification';
-import { post } from '@/utils/networkUtils';
+import { get, post, uri } from '@/utils/networkUtils';
 import { defineStore } from 'pinia';
 import { classKeys } from '../geojson/sample_data';
 import { useUserStore } from './user';
@@ -16,25 +16,27 @@ import { returnNotificationObject } from '@/utils/commonUtils';
 interface IState {
     isClassifying: boolean;
     keysToBeClassified: string[];
-    classifiedKeys: string[];
+    classifiedIndices: number[];
     currentKey: string;
     currentClassificationIndex: number;
-    skippedKeys: string[];
+    skippedIndices: number[];
     isFetching: boolean;
-    classifiedIndex: number[];
     total_features: number;
+    regions: string[];
+    featureInputValue: string;
 }
 
 const initialState: IState = {
     isClassifying: false,
     keysToBeClassified: classKeys,
-    classifiedKeys: [],
+    classifiedIndices: [],
     currentKey: '',
     currentClassificationIndex: NaN,
-    skippedKeys: [],
+    skippedIndices: [],
     isFetching: false,
-    classifiedIndex: [],
     total_features: NaN,
+    regions: [],
+    featureInputValue: '',
 };
 
 const { user } = useUserStore();
@@ -53,10 +55,9 @@ export const useMapStore = defineStore({
                 });
                 const index = response.body.current_feature;
                 this.$patch({
-                    isClassifying: !this.isClassifying,
+                    isClassifying: true,
                     currentClassificationIndex: index,
-                    currentKey: response.body.feature.properties.class,
-                    classifiedIndex: response.body.classified,
+                    classifiedIndices: response.body.classified,
                     total_features: response.body.total_features,
                 });
             } catch (error: any) {
@@ -64,21 +65,20 @@ export const useMapStore = defineStore({
                 console.error(error);
             }
         },
-        async nextClassification(currentIndex: number, map_id: string, featureValue = '') {
+        async nextClassification(currentIndex: number, map_id: string) {
             try {
-                // const newIndex = currentIndex + 1;
                 const requestBody: Partial<INextRequest> = {
                     map_id,
                     user_id: user.user_id,
                     current_feature: currentIndex,
                 };
                 const newObject: Partial<IState> = {};
-                if (!featureValue) {
+                if (!this.featureInputValue) {
                     requestBody.save = false;
-                    newObject.skippedKeys = [...this.skippedKeys, this.keysToBeClassified[currentIndex]];
+                    newObject.skippedIndices = [...this.skippedIndices, currentIndex];
                 } else {
                     requestBody.save = true;
-                    requestBody.content = { value: featureValue };
+                    requestBody.content = { value: this.featureInputValue };
                     // newObject.classifiedKeys = [...this.classifiedKeys, this.keysToBeClassified[currentIndex]];
                 }
                 const response = await post<INextResponse, Partial<INextRequest>>(
@@ -87,7 +87,8 @@ export const useMapStore = defineStore({
                 );
                 newObject.currentClassificationIndex = response.body.current_feature;
                 newObject.currentKey = response.body.feature.properties.class;
-                newObject.classifiedIndex = response.body.classified;
+                newObject.classifiedIndices = response.body.classified;
+                newObject.featureInputValue = '';
                 this.$patch(newObject);
             } catch (error: any) {
                 setNotification(returnNotificationObject(error.message, 'alert'));
@@ -109,7 +110,8 @@ export const useMapStore = defineStore({
                 const newObject: Partial<IState> = {
                     currentClassificationIndex: response.body.current_feature,
                     currentKey: response.body.feature.properties.class,
-                    classifiedIndex: response.body.classified,
+                    classifiedIndices: response.body.classified,
+                    featureInputValue: response.body.content?.value ?? '',
                 };
                 this.$patch(newObject);
             } catch (error: any) {
@@ -119,6 +121,14 @@ export const useMapStore = defineStore({
         },
         endClassification() {
             this.isClassifying = false;
+        },
+        async getAllRegions() {
+            try {
+                const response = await get<string[]>(`${uri}metadata/maps`);
+                this.$patch({ regions: response.body });
+            } catch (error: any) {
+                setNotification(returnNotificationObject(error.message, 'alert'));
+            }
         },
     },
 });
