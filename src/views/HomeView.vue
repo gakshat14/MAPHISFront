@@ -84,7 +84,7 @@ function getImageURL(image: string) {
 <style scoped>
 header {
     z-index: 1000;
-    background-image: url(@/images/background.png);
+    background-image: url(/src/images/background.png);
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
@@ -191,7 +191,7 @@ ul {
     align-items: center;
     width: 100%;
     flex-wrap: wrap;
-    background-image: url(@/images/Map_BG_2.png);
+    background-image: url(/src/images/Map_BG_2.png);
     background-blend-mode: multiply;
     background-color: #1b8264;
     padding: 1rem 0;

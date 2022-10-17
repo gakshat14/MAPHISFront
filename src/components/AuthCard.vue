@@ -46,7 +46,7 @@ article.auth-card {
     flex-wrap: wrap-reverse;
 }
 aside {
-    background-image: url(@/images/temp_back.jpg);
+    background-image: url(src/images/temp_back.jpg);
     height: 100vh;
     flex-grow: 4;
     display: flex;
