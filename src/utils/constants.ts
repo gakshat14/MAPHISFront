@@ -39,3 +39,9 @@ export const region = [
     { value: 'Luton', text: 'Luton' },
     { value: 'york', text: 'york' },
 ];
+
+export enum fillColor {
+    vegetation = '#458754',
+    imprint = '#c55c44',
+    text = '#130303',
+}

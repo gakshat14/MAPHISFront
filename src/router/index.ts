@@ -33,6 +33,11 @@ const router = createRouter({
             component: () => import('../views/ForgotPasswordView.vue'),
         },
         {
+            path: '/demo',
+            name: 'demo',
+            component: () => import('../views/DemoView.vue'),
+        },
+        {
             path: '/:pathMatch(.*)*',
             redirect: '/',
         },

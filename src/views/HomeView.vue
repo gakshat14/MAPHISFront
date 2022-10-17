@@ -20,6 +20,9 @@ function getImageURL(image: string) {
                     <li id="login-button-container">
                         <router-link title="login" to="login">Login</router-link>
                     </li>
+                    <li id="demo-button-container">
+                        <router-link title="demo" to="demo">Demo</router-link>
+                    </li>
                 </ul>
             </nav>
         </div>
@@ -121,10 +124,16 @@ li > a {
     font-weight: 400;
 }
 
-li#login-button-container > a {
+li#login-button-container > a,
+li#demo-button-container > a {
     background-color: #1c8568;
     color: white;
     padding: 10px 15px;
+}
+
+li#demo-button-container > a {
+    margin-left: 10px;
+    background-color: #9a3736;
 }
 
 .content {
