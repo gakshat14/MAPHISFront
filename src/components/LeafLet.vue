@@ -61,11 +61,11 @@ function initLeafLet(region: string) {
     const img = props.imgSize;
     leafMap = map('leaflet-container', { crs: CRS.Simple });
     rc = new RasterCoords(leafMap, img);
-    leafMap.setView(rc.unproject(img), 2);
+    leafMap.setView(rc.unproject(img), 4);
 
     const options: TileLayerOptions = {
-        minZoom: region == 'york' ? 0 : 4,
-        maxZoom: region == 'york' ? 4 : 7,
+        minZoom: 4,
+        maxZoom: 7,
         noWrap: true,
         bounds: rc.getMaxBounds(),
         maxNativeZoom: rc.zoomLevel(),

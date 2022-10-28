@@ -10,6 +10,7 @@ import type { INetworkData, IOption } from '@/utils/model';
 import { createNetworkObject, get, uri } from '@/utils/networkUtils';
 import { useNotificationStore } from '@dafcoe/vue-notification';
 import { returnNotificationObject } from '@/utils/commonUtils';
+import { regionSize } from '@/utils/constants';
 import map from 'lodash/map';
 
 export interface IProps {
@@ -31,7 +32,7 @@ const { getFullName } = useUserStore();
 const state: IState = reactive({
     geojsonSelectValue: 'text',
     classificationInput: '',
-    regionSelectValue: 'york',
+    regionSelectValue: 'Luton',
     regionsData: createNetworkObject([], true),
     featuresData: createNetworkObject([], true),
     regionOptions: [],
@@ -183,6 +184,7 @@ function onFormSubmit(e: Event) {
                 </div>
             </main>
         </div>
+
         <div class="dashboard-application">
             <LeafLet
                 :skipped-indices="skippedIndices"
@@ -191,7 +193,7 @@ function onFormSubmit(e: Event) {
                 :is-classifying="isClassifying"
                 :current-classification-index="currentClassificationIndex"
                 :feature="props.isDemo ? 'all' : state.geojsonSelectValue"
-                :img-size="state.regionSelectValue === 'york' ? [4096, 4096] : [34200, 37950]"
+                :img-size="regionSize[state.regionSelectValue]"
             />
         </div>
     </section>
